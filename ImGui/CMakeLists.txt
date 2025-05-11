@@ -48,9 +48,10 @@ add_library(ImGui
 
 target_include_directories(ImGui
 	PUBLIC
-		src
-		${RemoteImGui_SOURCE_DIR}
-		${RemoteImGui_SOURCE_DIR}/backends/
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+		$<BUILD_INTERFACE:${RemoteImGui_SOURCE_DIR}>
+		$<BUILD_INTERFACE:${RemoteImGui_SOURCE_DIR}/backends>
+		$<INSTALL_INTERFACE:include/CppSdl2/Imgui>
 )
 
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
@@ -94,4 +95,40 @@ set_target_properties(ImGui
 		CXX_STANDARD 23
 		CXX_STANDARD_REQUIRED YES
 		CXX_EXTENSIONS NO
+)
+
+# -------------------------------------------------------------------------
+install(TARGETS ImGui
+	EXPORT CppSdl2Targets
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	INCLUDES DESTINATION include
+)
+
+install(FILES
+	${RemoteImGui_SOURCE_DIR}/misc/freetype/imgui_freetype.h
+	DESTINATION include/CppSdl2/Imgui/misc/freetype
+)
+install(FILES
+	${RemoteImGui_SOURCE_DIR}/misc/cpp/imgui_stdlib.h
+	DESTINATION include/CppSdl2/Imgui/misc/cpp
+)
+
+install(FILES
+	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.h
+	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdl3.h
+	${RemoteImGui_SOURCE_DIR}/imgui.h
+	${RemoteImGui_SOURCE_DIR}/imgui_internal.h
+	${RemoteImGui_SOURCE_DIR}/imstb_rectpack.h
+	${RemoteImGui_SOURCE_DIR}/imstb_textedit.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/imconfig.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/imgui_user.h
+	DESTINATION include/CppSdl2/Imgui
+)
+
+install(EXPORT CppSdl2Targets
+	FILE CppSdl2Targets.cmake
+	NAMESPACE CppSdl2::
+	DESTINATION share/cmake/CppSdl2
 )

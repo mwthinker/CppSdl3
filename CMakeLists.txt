@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 4.00)
 project(CppSdl3
 	DESCRIPTION
 		"A C++ Wrapper of SDL3"
 	LANGUAGES
 		CXX
+	VERSION 0.1.0
 )
 
 set(SOURCES
@@ -98,3 +99,52 @@ option(CppSdl3_Test "Add CppSdl3_Test to project." OFF)
 if (CppSdl3_Test)
 	add_subdirectory(CppSdl3_Test)
 endif ()
+
+# -------------------------------------------------------------------------
+# Install
+install(TARGETS CppSdl3
+	EXPORT CppSdl3Targets
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	INCLUDES DESTINATION include
+)
+
+install(DIRECTORY src/sdl/
+	DESTINATION include/CppSdl3/sdl
+	FILES_MATCHING PATTERN "*.h"
+)
+
+include(CMakePackageConfigHelpers)
+
+# Export the package configuration
+install(EXPORT CppSdl3Targets
+	FILE CppSdl3Targets.cmake
+	NAMESPACE CppSdl3::
+	DESTINATION share/cmake/CppSdl3
+)
+
+# Generate the package configuration file
+configure_package_config_file(
+	${CMAKE_CURRENT_SOURCE_DIR}/CppSdl3Config.cmake.in
+	${CMAKE_CURRENT_BINARY_DIR}/CppSdl3Config.cmake
+	INSTALL_DESTINATION share/cmake/CppSdl3
+)
+
+# Install the generated package configuration file
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CppSdl3Config.cmake
+	DESTINATION share/cmake/CppSdl3
+)
+
+# Install the package configuration file
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+	${CMAKE_CURRENT_BINARY_DIR}/CppSdl3ConfigVersion.cmake
+	VERSION ${PROJECT_VERSION}
+	COMPATIBILITY AnyNewerVersion
+)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CppSdl3ConfigVersion.cmake
+	DESTINATION share/cmake/CppSdl3
+)
+
+install(FILES LICENSE.txt DESTINATION share/doc/CppSdl3)
