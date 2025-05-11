@@ -2,10 +2,6 @@
 #include "exception.h"
 
 #include <spdlog/spdlog.h>
-#include <glbinding/glbinding.h>
-#include <glbinding/FunctionCall.h>
-#include <glbinding/AbstractFunction.h>
-#include <glbinding/gl/enum.h>
 
 #include <thread>
 #include <chrono>
@@ -61,8 +57,6 @@ namespace sdl {
 		if (!bordered_) {
 			flags |= SDL_WINDOW_BORDERLESS;
 		}
-		
-		initOpenGl();
 
 		window_ = SDL_CreateWindow(
 			title_.c_str(),

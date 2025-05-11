@@ -108,8 +108,6 @@ namespace sdl {
 		}
 
 	protected:
-		virtual void initOpenGl() {}
-
 		virtual void initPreLoop() {}
 
 		// Is called each loop cycle.
