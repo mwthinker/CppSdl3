@@ -11,7 +11,7 @@ FetchContent_Declare(RemoteImGui
 	GIT_REPOSITORY
 		https://github.com/ocornut/imgui.git
 	GIT_TAG
-		0a222a3e2adbda761ae8f3aeffd9254b976693e9
+		eaac68ca2ce404137d7a1e7d8f74fafbfe30f508
 )
 FetchContent_MakeAvailable(RemoteImGui)
 FetchContent_GetProperties(RemoteImGui
@@ -45,36 +45,27 @@ add_library(ImGui
 	${IMGUI_USER_CONFIG}
 	${CMAKE_CURRENT_SOURCE_DIR}/src/imgui_user.h
 )
+add_library(CppSdl3::ImGui ALIAS ImGui)
 
 target_include_directories(ImGui
 	PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 		$<BUILD_INTERFACE:${RemoteImGui_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${RemoteImGui_SOURCE_DIR}/backends>
-		$<INSTALL_INTERFACE:include/CppSdl2/Imgui>
+		$<INSTALL_INTERFACE:include/cppsdl3/Imgui>
 )
 
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
 find_package(SDL3_image CONFIG REQUIRED)
-
-#$<IF:$<TARGET_EXISTS:SDL3_image::SDL3_image-shared>,SDL3_image::SDL3_image-shared,SDL3_image::SDL3_image-static>)
 find_package(SDL3_ttf CONFIG REQUIRED)
 find_package(freetype CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 
-# Compile error in GCC 2023-09-13
-# find_package(unofficial-lunasvg CONFIG REQUIRED)
-# Link to unofficial::lunasvg::lunasvg
-# vcpkg "lunasvg"
-# IMGUI_ENABLE_FREETYPE_LUNASVG
-
 target_link_libraries(ImGui
 	PUBLIC
 		SDL3::SDL3
-		#SDL3::SDL3_image
 		$<IF:$<TARGET_EXISTS:SDL3_image::SDL3_image-shared>,SDL3_image::SDL3_image-shared,SDL3_image::SDL3_image-static>
 		$<IF:$<TARGET_EXISTS:SDL3_ttf::SDL3_ttf>,SDL3_ttf::SDL3_ttf,SDL3_ttf::SDL3_ttf-static>
-		#SDL3::SDL3_ttf
 		freetype
 		fmt::fmt
 )
@@ -99,22 +90,29 @@ set_target_properties(ImGui
 
 # -------------------------------------------------------------------------
 install(TARGETS ImGui
-	EXPORT CppSdl2Targets
+	EXPORT CppSdl3Targets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
 	INCLUDES DESTINATION include
 )
 
+# Install specific files from the misc directory
+install(FILES
+	${RemoteImGui_SOURCE_DIR}/misc/debuggers/imgui.natvis
+	${RemoteImGui_SOURCE_DIR}/misc/debuggers/imgui.natstepfilter
+	DESTINATION include/cppsdl3/imgui/misc/debuggers
+)
 install(FILES
 	${RemoteImGui_SOURCE_DIR}/misc/freetype/imgui_freetype.h
-	DESTINATION include/CppSdl2/Imgui/misc/freetype
+	DESTINATION include/cppsdl3/imgui/misc/freetype
 )
 install(FILES
 	${RemoteImGui_SOURCE_DIR}/misc/cpp/imgui_stdlib.h
-	DESTINATION include/CppSdl2/Imgui/misc/cpp
+	DESTINATION include/cppsdl3/imgui/misc/cpp
 )
 
+# Install specific files from the root of RemoteImGui_SOURCE_DIR
 install(FILES
 	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.h
 	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdl3.h
@@ -124,11 +122,11 @@ install(FILES
 	${RemoteImGui_SOURCE_DIR}/imstb_textedit.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/imconfig.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/imgui_user.h
-	DESTINATION include/CppSdl2/Imgui
+	DESTINATION include/cppsdl3/imgui
 )
 
-install(EXPORT CppSdl2Targets
-	FILE CppSdl2Targets.cmake
-	NAMESPACE CppSdl2::
-	DESTINATION share/cmake/CppSdl2
+install(EXPORT CppSdl3Targets
+	FILE CppSdl3Targets.cmake
+	NAMESPACE CppSdl3::
+	DESTINATION share/cmake/cppsdl3
 )

@@ -18,8 +18,6 @@ set(SOURCES
 	src/sdl/imguiauxiliary.h
 	src/sdl/imguiwindow.h
 	src/sdl/imguiwindow.cpp
-	src/sdl/initsdl.cpp
-	src/sdl/initsdl.h
 	src/sdl/rect.h
 	src/sdl/surface.cpp
 	src/sdl/surface.h
@@ -107,12 +105,16 @@ install(TARGETS CppSdl3
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
-	INCLUDES DESTINATION include
+	INCLUDES DESTINATION include/cppsdl3
 )
 
 install(DIRECTORY src/sdl/
-	DESTINATION include/CppSdl3/sdl
+	DESTINATION include/cppsdl3/sdl
 	FILES_MATCHING PATTERN "*.h"
+)
+install(FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/cppsdl3.natstepfilter
+	DESTINATION include/cppsdl3
 )
 
 include(CMakePackageConfigHelpers)
@@ -121,19 +123,19 @@ include(CMakePackageConfigHelpers)
 install(EXPORT CppSdl3Targets
 	FILE CppSdl3Targets.cmake
 	NAMESPACE CppSdl3::
-	DESTINATION share/cmake/CppSdl3
+	DESTINATION share/cmake/cppsdl3
 )
 
 # Generate the package configuration file
 configure_package_config_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/CppSdl3Config.cmake.in
 	${CMAKE_CURRENT_BINARY_DIR}/CppSdl3Config.cmake
-	INSTALL_DESTINATION share/cmake/CppSdl3
+	INSTALL_DESTINATION share/cmake/cppsdl3
 )
 
 # Install the generated package configuration file
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CppSdl3Config.cmake
-	DESTINATION share/cmake/CppSdl3
+	DESTINATION share/cmake/cppsdl3
 )
 
 # Install the package configuration file
@@ -144,7 +146,7 @@ write_basic_package_version_file(
 	COMPATIBILITY AnyNewerVersion
 )
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CppSdl3ConfigVersion.cmake
-	DESTINATION share/cmake/CppSdl3
+	DESTINATION share/cmake/cppsdl3
 )
 
-install(FILES LICENSE.txt DESTINATION share/doc/CppSdl3)
+install(FILES LICENSE.txt DESTINATION share/doc/cppsdl3)
