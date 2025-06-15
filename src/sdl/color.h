@@ -73,8 +73,16 @@ namespace sdl {
 			return value_;
 		}
 
+		constexpr operator glm::vec4() const {
+			return {red(), green(), blue(), alpha()};
+		}
+
 		constexpr operator SDL_Color() const noexcept {
 			return {redByte(), greenByte(), blueByte(), alphaByte()};
+		}
+
+		constexpr operator SDL_FColor() const noexcept {
+			return {red(), green(), blue(), alpha()};
 		}
 
 		friend constexpr bool operator==(Color left, Color right) noexcept;

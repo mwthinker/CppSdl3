@@ -1,36 +1,57 @@
-#ifndef TESTWINDOW_H
-#define TESTWINDOW_H
+#ifndef TESTIMGUIWINDOW_H
+#define TESTIMGUIWINDOW_H
 
+#include <sdl/shader.h>
 #include <sdl/window.h>
 #include <sdl/gamecontroller.h>
+#include <sdl/gpu/sdlgpu.h>
+#include <sdl/imageatlas.h>
 
 #include <functional>
 #include <vector>
+
+#include <spdlog/spdlog.h>
+
+SDL_Surface* createSurface(int w, int h, sdl::Color color);
 
 class TestWindow : public sdl::Window {
 public:
 	TestWindow();
 
-	void setSpaceFunction(std::function<void()>&& onSpacePressed) {
+	void setSpaceFunction(std::function<void()> onSpacePressed) {
 		onSpacePressed_ = std::move(onSpacePressed);
 	}
 
+	void addSurfaceToAtlas(SDL_Surface* surface, int border = 0);
+
 private:
-	void initPreLoop() override;
+	void preLoop() override;
 
-    void update(const sdl::DeltaTime& deltaTime) override;
+	void renderImGui(const sdl::DeltaTime& deltaTime) override;
 
-	void eventUpdate(const SDL_Event& windowEvent) override;
+	void processEvent(const SDL_Event& windowEvent) override;
 
-	void resize(int w, int h);
+	void renderFrame(const sdl::DeltaTime& deltaTime, SDL_GPUTexture* swapchainTexture, SDL_GPUCommandBuffer* commandBuffer) override;
+
+	void destroy();
 
 	void removeGamepad(SDL_JoystickID instanceId);
 
-	bool focus_ = true;
+	std::function<void()> onSpacePressed_ = []() {
+		spdlog::info("Space pressed");
+	};
 	int controllerEvent_ = 0;
-	
-	std::function<void()> onSpacePressed_;
 	std::vector<sdl::GameController> gameControllers_;
+
+	std::unique_ptr<sdl::gpu::GpuBuffer> myVertexBuffer_;
+	std::unique_ptr<sdl::gpu::GpuGraphicsPipeline> myGraphicsPipeline_;
+	sdl::gpu::GpuSampler sampler_;
+	sdl::gpu::GpuTexture texture_;
+	std::vector<sdl::Vertex> vertexes_;
+	sdl::gpu::GpuTexture atlas_;
+
+	sdl::Shader shader_;
+	sdl::ImageAtlas imageAtlas_{600, 600};
 };
 
 #endif

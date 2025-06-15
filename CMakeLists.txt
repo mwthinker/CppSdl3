@@ -8,23 +8,31 @@ project(CppSdl3
 )
 
 set(SOURCES
+	src/sdl/gpu/gpucontext.cpp
+	src/sdl/gpu/gpucontext.h
+	src/sdl/gpu/gpuresource.h
+	src/sdl/gpu/gpuutil.h
+	src/sdl/gpu/gpuutil.cpp
+	src/sdl/gpu/sdlgpu.h
+	
 	src/sdl/color.cpp
 	src/sdl/color.h
-	src/sdl/font.cpp
-	src/sdl/font.h
 	src/sdl/gamecontroller.cpp
 	src/sdl/gamecontroller.h
-	src/sdl/imguiauxiliary.cpp
-	src/sdl/imguiauxiliary.h
-	src/sdl/imguiwindow.h
-	src/sdl/imguiwindow.cpp
-	src/sdl/rect.h
-	src/sdl/surface.cpp
-	src/sdl/surface.h
-	src/sdl/texture.cpp
-	src/sdl/texture.h
+	src/sdl/glm.cpp
+	src/sdl/glm.h
+	src/sdl/imageatlas.cpp
+	src/sdl/imageatlas.h
+	src/sdl/sdlexception.h
+	src/sdl/shader.cpp
+	src/sdl/shader.h
+	src/sdl/shader.vs.h
+	src/sdl/shader.ps.h
 	src/sdl/window.cpp
 	src/sdl/window.h
+	src/sdl/util.cpp
+	src/sdl/util.h
+
 	vcpkg.json
 	CMakePresets.json
 	CppSdl3.natstepfilter
@@ -46,7 +54,6 @@ set_target_properties(
 	PROPERTIES FOLDER
 		ExternalDependencies
 )
-
 
 if (MSVC)
 	target_compile_options(CppSdl3
@@ -71,11 +78,13 @@ target_include_directories(CppSdl3
 )
 
 find_package(spdlog CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 
 target_link_libraries(CppSdl3
 	PUBLIC
 		ImGui
 		spdlog::spdlog_header_only
+		fmt::fmt
 )
 
 set_target_properties(CppSdl3

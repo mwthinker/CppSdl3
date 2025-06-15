@@ -1,9 +1,6 @@
 #include "gamecontroller.h"
 
 #include <spdlog/spdlog.h>
-#include <SDL3/SDL.h>
-
-#include <cstring>
 
 bool operator==(const SDL_GUID& guid1, const SDL_GUID& guid2) {
 	return std::memcmp(guid1.data, guid2.data, sizeof(SDL_GUID::data)) == 0;
@@ -15,7 +12,8 @@ bool operator!=(const SDL_GUID& guid1, const SDL_GUID& guid2) {
 namespace sdl {
 
 	std::string guidToString(const SDL_GUID& guid) {
-		std::string str(33, '0'); // SDL_JoystickGetGUIDString requires size >= 33
+		static constexpr int MinSizeGuid = 33; // According to SDL_GUIDToString documentation.
+		std::string str(MinSizeGuid, '0');
 		SDL_GUIDToString(guid, str.data(), static_cast<int>(str.size()));
 		return str;
 	}
@@ -31,22 +29,13 @@ namespace sdl {
 	}
 
 	GameController& GameController::operator=(GameController&& other) noexcept {
-		if (gameController_ != nullptr) {
-			SDL_CloseGamepad(gameController_);
-		}
 		gameController_ = std::exchange(other.gameController_, nullptr);
 		guid_ = std::exchange(other.guid_, {});
 		return *this;
 	}
 
-	GameController::~GameController() {
-		if (gameController_ != nullptr) {
-			SDL_CloseGamepad(gameController_);
-		}
-	}
-
 	const char* GameController::getName() const {
-		return SDL_GetGamepadName(gameController_);
+		return SDL_GetGamepadName(gameController_.get());
 	}
 
 	void GameController::loadGameControllerMappings(const std::string& file) {
@@ -56,17 +45,13 @@ namespace sdl {
 	}
 
 	GameController GameController::addController(int index) {
-		if (SDL_IsGamepad(index)) {
-
-			if (auto controller = SDL_OpenGamepad(index); controller != nullptr) {
-
-				return GameController{controller, SDL_GetJoystickGUIDForID(index)};
-			} else {
-				spdlog::error("[sdl::GameController] Could not open game controller: {}", SDL_GetError());
-			}
-		} else {
-			spdlog::error("[sdl::GameController] Game Controller mapping is not available.");
+		if (!SDL_IsGamepad(index)) {
+			spdlog::error("[sdl::GameController] Game Controller mapping is not available for index: {}", index);
 		}
+		if (auto controller = SDL_OpenGamepad(index); controller != nullptr) {
+			return GameController{controller, SDL_GetJoystickGUIDForID(index)};
+		}
+		spdlog::error("[sdl::GameController] Could not open game controller: {}", SDL_GetError());
 		return GameController{};
 	}
 
@@ -74,16 +59,13 @@ namespace sdl {
 		gameController.close();
 	}
 
-	const SDL_GUID& GameController::GameController::getGuid() const {
+	const SDL_GUID& GameController::getGuid() const {
 		return guid_;
 	}
 
 	void GameController::close() {
-		if (gameController_ != nullptr) {
-			SDL_CloseGamepad(gameController_);
-			gameController_ = nullptr;
-			guid_ = {};
-		}
+		gameController_ = nullptr;
+		guid_ = {};
 	}
 
 }

@@ -1,15 +1,12 @@
 #include "testwindow.h"
 
-#include "testimguiwindow.h"
 #include "types.h"
-
-#include <sdl/initsdl.h>
-#include <sdl/surface.h>
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <fmt/core.h>
+#include <SDL3_image/SDL_image.h>
 
 #include <cassert>
 #include <sstream>
@@ -22,89 +19,53 @@ void testPrintColors() {
 	}
 }
 
-/*
-// Test to load directly to ram memory.
-void testLoadTextureAtlas() {
-	sdl::Surface red{200, 100, Red};
-	sdl::Surface green{100, 200, Green};
-	sdl::Surface blue{200, 200, Blue};
-	sdl::Surface white{30, 30, White};
+void testImGuiWindow() {
+	auto red = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(createSurface(200, 100, Red));
+	auto green = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(createSurface(100, 200, Green));
+	auto blue = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(createSurface(200, 200, Blue));
+	auto white = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(createSurface(30, 30, White));
+	auto tetris = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(IMG_Load("tetris.bmp"));
+	auto cross = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(IMG_Load("cross.png"));
 
-	sdl::TextureAtlas atlas{512, 512};
-
-	sdl::Sprite s = atlas.add("tetris.bmp", 1);
-	s = atlas.add("cross.png", 1);
-	s = atlas.add(red, 1);
-	s = atlas.add(green, 1);
-	s = atlas.add(blue, 1);
-	s = atlas.add(white, 1);
-
-	TestWindow w{atlas.get()};
-	w.setBordered(false);
-	w.setAlwaysOnTop(true);
-	w.setOpacity(0.5f);
-	w.startLoop();
-
-	spdlog::info("[testLoadTextureAtlas] Successfully!");
-}
-
-// Test to load directly to graphic memory. And draw the total texture and the newly added sprite.
-void testLoadTextureAtlas2() {
-	sdl::Surface red{200, 100, Red};
-	sdl::Surface green{100, 200, Green};
-	sdl::Surface blue{200, 200, Blue};
-	sdl::Surface white{30, 30, White};
-
+	spdlog::info("[testLoadTextureAtlas2] Error {}", SDL_GetError());
 	static auto htmlColors = html::getHtmlColors();
 	static int index = -1;
 
-	sdl::TextureAtlas atlas{600, 600};
-	TestWindow w{atlas.get()};
+	TestWindow w;
 	int nbr = 0;
 	auto func = [&]() {
 		++nbr;
-		sdl::Sprite sprite;
 		switch (nbr) {
 			case 1:
-				sprite = atlas.add("tetris.bmp", 1);
+				w.addSurfaceToAtlas(tetris.get(), 1);
 				break;
 			case 2:
-				sprite = atlas.add("cross.png", 1);
+				w.addSurfaceToAtlas(cross.get(), 1);
 				break;
 			case 3:
-				sprite = atlas.add(red, 10);
+				w.addSurfaceToAtlas(red.get(), 10);
 				break;
 			case 4:
-				sprite = atlas.add(green, 5);
+				w.addSurfaceToAtlas(green.get(), 5);
 				break;
 			case 5:
-				sprite = atlas.add(blue, 50);
+				w.addSurfaceToAtlas(blue.get(), 50);
 				break;
 			default:
 				if (++index < static_cast<int>(htmlColors.size())) {
 					auto html = htmlColors[index];
-					sprite = atlas.add(sdl::Surface{30, 30, html.color}, 1);
+					auto colorSurface = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(createSurface(30, 30, html.color));
+					w.addSurfaceToAtlas(colorSurface.get(), 1);
 					spdlog::info("[testLoadTextureAtlas2] Color added {} = {} ", html.name, html.color.toHexString());
 				} else {
-					sprite = atlas.add(white, 1);
+					w.addSurfaceToAtlas(white.get(), 1);
 					spdlog::info("[testLoadTextureAtlas2] Add white");
 				}
 				break;
 		}
-		if (!sprite.isValid()) {
-			spdlog::info("[testLoadTextureAtlas2] Number {} failed to be inserted!", nbr);
-		}
 	};
 
 	w.setSpaceFunction(func);
-	w.startLoop();
-
-	spdlog::info("[testLoadTextureAtlas2] Successfully!");
-}
-*/
-
-void testImGuiWindow() {
-	TestImGuiWindow w;
 	w.startLoop();
 }
 
@@ -151,8 +112,6 @@ void initLogger() {
 
 int main(int argc, char** argv) {
 	initLogger();
-
-	sdl::InitSdl sdl{SDL_INIT_VIDEO | SDL_INIT_GAMEPAD};
 
 	if (argc >= 2) {
 		std::string programName = *argv;

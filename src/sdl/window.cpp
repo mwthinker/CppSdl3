@@ -1,14 +1,65 @@
 #include "window.h"
-#include "exception.h"
+#include "sdlexception.h"
 
 #include <spdlog/spdlog.h>
+#include <SDL3_image/SDL_image.h>
 
 #include <thread>
 #include <chrono>
 #include <sstream>
 #include <stdexcept>
 
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlgpu3.h>
+
 namespace sdl {
+
+	namespace {
+
+		void imguiInit(SDL_Window* window, SDL_GPUDevice* device) {
+			IMGUI_CHECKVERSION();
+			ImGui::CreateContext();
+			auto& io = ImGui::GetIO();
+			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+			ImGuiStyle& style = ImGui::GetStyle();
+			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+				style.WindowRounding = 0.0f;
+				style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+			}
+
+			// Setup Platform/Renderer backends
+			ImGui_ImplSDL3_InitForSDLGPU(window);
+			ImGui_ImplSDLGPU3_InitInfo init_info = {};
+			init_info.Device = device;
+			init_info.ColorTargetFormat = SDL_GetGPUSwapchainTextureFormat(init_info.Device, window);
+			init_info.MSAASamples = SDL_GPU_SAMPLECOUNT_1;
+			ImGui_ImplSDLGPU3_Init(&init_info);
+		}
+
+		void showColorWindow(bool& open) {
+			ImGui::SetNextWindowSize({310.f, 400.f});
+			ImGui::Window("Html Colors", &open, ImGuiWindowFlags_NoResize, []() {
+				ImGui::Text("Copy color to clipboard by clicking");
+
+				static const auto htmlColors = color::html::getHtmlColors();
+				static std::string colorStr = "                   ";
+				int nbr = 0;
+				for (const auto& [name, color] : htmlColors) {
+					++nbr;
+					colorStr.clear();
+					colorStr += name;
+					colorStr += "##1";
+					if (ImGui::ColorButton(colorStr.c_str(), color)) {
+						ImGui::SetClipboardText(name);
+					}
+					if (nbr % 10 != 0) {
+						ImGui::SameLine();
+					}
+				}
+			});
+		}
+	}
 
 	Window::Window() {
 		spdlog::info("[sdl::Window] Creating Window");
@@ -30,13 +81,17 @@ namespace sdl {
 		if (icon_) {
 			SDL_DestroySurface(icon_);
 		}
+		
+		ImGui_ImplSDLGPU3_Shutdown();
+		ImGui_ImplSDL3_Shutdown();
+		ImGui::DestroyContext();
+
+		gpuContext_.shutdown();
 		if (window_) {
-			if (gpuDevice_) {
-				SDL_ReleaseWindowFromGPUDevice(gpuDevice_, window_);
-				SDL_DestroyGPUDevice(gpuDevice_);
-			}
 			SDL_DestroyWindow(window_);
+			SDL_Quit();
 		}
+
 		spdlog::debug("[sdl::Window] Destructed.");
 	}
 
@@ -47,47 +102,32 @@ namespace sdl {
 		}
 
 		spdlog::info("[sdl::Window] Init loop");
-		auto flags = 0;
-		if (resizable_) {
-			flags |= SDL_WINDOW_RESIZABLE;
-		}
-		if (alwaysOnTop_) {
-			flags |= SDL_WINDOW_ALWAYS_ON_TOP;
-		}
-		if (!bordered_) {
-			flags |= SDL_WINDOW_BORDERLESS;
-		}
-
 		window_ = SDL_CreateWindow(
 			title_.c_str(),
 			width_,	height_,
-			flags
+			flags_
 		);
 		if (window_ == nullptr) {
-			spdlog::error("[sdl::Window] SDL_CreateWindow failed: {}", SDL_GetError());
-			throw std::exception{};
+			throw sdl::SdlException{"[sdl::Window] Failed to create window"};
 		} else {
-			spdlog::info("[sdl::Window] Windows {} created: \n\t(x, y) = ({}, {}) \n\t(w, h) = ({}, {}) \n\tflags = {}", title_, x_ == SDL_WINDOWPOS_UNDEFINED? -1 : x_, y_ == SDL_WINDOWPOS_UNDEFINED ? -1 : y_, width_, height_, flags);
+			spdlog::info("[sdl::Window] Windows {} created: \n\t(x, y) = ({}, {}) \n\t(w, h) = ({}, {}) \n\tflags = {}",
+				title_, 
+				x_ == SDL_WINDOWPOS_UNDEFINED? -1 : x_,
+				y_ == SDL_WINDOWPOS_UNDEFINED ? -1 : y_,
+				width_,
+				height_,
+				flags_
+			);
 		}
-		gpuDevice_ = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_METALLIB, true, nullptr);
-		if (gpuDevice_ == nullptr) {
-			spdlog::error("[sdl::Window] SDL_CreateGPUDevice failed: {}", SDL_GetError());
-			throw std::exception{};
+		if (gpuContext_.initialize(window_)) {
+			spdlog::info("[sdl::Window] GPU context initialized");
+		} else {
+			throw sdl::SdlException{"Failed to initialize GPU context"};
 		}
 
-		if (!SDL_ClaimWindowForGPUDevice(gpuDevice_, window_)) {
-			spdlog::error("[sdl::Window] SDL_ClaimWindowForGPUDevice(): %s\n", SDL_GetError());
-			throw std::exception{};
+		if (!SDL_SetGPUSwapchainParameters(gpuContext_.getGpuDevice(), window_, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC)) {
+			spdlog::warn("[sdl::Window] SDL_SetGPUSwapchainParameters failed: {}", SDL_GetError());
 		}
-		SDL_SetGPUSwapchainParameters(gpuDevice_, window_, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_MAILBOX);
-		
-		if (minWidth_ > 0 && minHeight_ > 0) {
-			SDL_SetWindowMinimumSize(window_, minWidth_, minHeight_);
-		}
-		if (maxWidth_ > 0 && maxHeight_ > 0) {
-			SDL_SetWindowMaximumSize(window_, maxWidth_, maxHeight_);
-		}
-		setOpacity(opacity_);
 
 		if (icon_) {
 			spdlog::debug("[sdl::Window] Windows icon updated");
@@ -98,56 +138,119 @@ namespace sdl {
 		quit_ = false;
 		setHitTestCallback(onHitTest_);
 
-		initPreLoop();
+		imguiInit(window_, gpuContext_.getGpuDevice());
+		preLoop();
+		spdlog::info("[sdl::Window] Loop starting");
 		runLoop();
 		spdlog::info("[sdl::Window] Loop ended");
+		postLoop();
 	}
 
 	void Window::runLoop() {
-		spdlog::info("[sdl::Window] Loop starting");
 		auto time = Clock::now();
 		while (!quit_) {
 			SDL_Event eventSDL;
 			while (SDL_PollEvent(&eventSDL)) {
-				eventUpdate(eventSDL);
+				ImGui_ImplSDL3_ProcessEvent(&eventSDL);
+
+				auto& io = ImGui::GetIO();
+				bool ioWantCapture = false;
+				switch (eventSDL.type) {
+					case SDL_EVENT_MOUSE_BUTTON_UP:
+						[[fallthrough]];
+					case SDL_EVENT_MOUSE_BUTTON_DOWN:
+						[[fallthrough]];
+					case SDL_EVENT_MOUSE_MOTION:
+						[[fallthrough]];
+					case SDL_EVENT_MOUSE_WHEEL:
+						ioWantCapture = io.WantCaptureMouse;
+						break;
+					case SDL_EVENT_KEY_UP:
+						[[fallthrough]];
+					case SDL_EVENT_KEY_DOWN:
+						ioWantCapture = io.WantCaptureKeyboard;
+						break;
+					case SDL_EVENT_TEXT_EDITING:
+						[[fallthrough]];
+					case SDL_EVENT_TEXT_INPUT:
+						ioWantCapture = io.WantTextInput;
+						break;
+				}
+
+				if (!ioWantCapture) {
+					processEvent(eventSDL);
+				}
 			}
 
 			auto currentTime = Clock::now();
 			auto delta = currentTime - time;
 			time = currentTime;
-			update(delta);
+			renderFrame(delta);
 
 			if (sleepingTime_ > std::chrono::nanoseconds{0}) {
 				std::this_thread::sleep_for(sleepingTime_);
 			}
-
-			//SDL_SetRenderDrawColorFloat(renderer_, clearColor_.red(),clearColor_.green(), clearColor_.blue(), clearColor_.alpha());
-			//SDL_RenderClear(renderer_);
 		}
 	}
 
-	void Window::setOpacity(float opacity) {
-		if (window_) {
-			SDL_SetWindowOpacity(window_, opacity);
-		} else {
-			opacity_ = opacity;
+	void Window::renderFrame(const DeltaTime& deltaTime) {
+		ImGui_ImplSDLGPU3_NewFrame();
+		ImGui_ImplSDL3_NewFrame();
+		ImGui::NewFrame();
+
+		renderImGui(deltaTime);
+
+		if (showDemoWindow_) {
+			ImGui::ShowDemoWindow(&showDemoWindow_);
 		}
+		if (showColorWindow_) {
+			showColorWindow(showColorWindow_);
+		}
+
+		ImGui::Render();
+
+		ImDrawData* drawData = ImGui::GetDrawData();
+		const bool isMinimized = (drawData->DisplaySize.x <= 0.0f || drawData->DisplaySize.y <= 0.0f);
+
+		SDL_GPUCommandBuffer* commandBuffer = SDL_AcquireGPUCommandBuffer(gpuContext_.getGpuDevice());
+
+		SDL_GPUTexture* swapchainTexture;
+		// Uses of SDL_AcquireGPUSwapchainTexture makes memory ballon! So uses SDL_WaitAndAcquireGPUSwapchainTexture instead.
+		SDL_WaitAndAcquireGPUSwapchainTexture(commandBuffer, window_, &swapchainTexture, nullptr, nullptr);
+		
+		if (swapchainTexture != nullptr && !isMinimized) {
+			// Derived class can override this method to draw additional content.
+			renderFrame(deltaTime, swapchainTexture, commandBuffer);
+
+			ImGui_ImplSDLGPU3_PrepareDrawData(drawData, commandBuffer);
+
+			SDL_GPUColorTargetInfo targetInfo{
+				.texture = swapchainTexture,
+				.load_op = SDL_GPU_LOADOP_LOAD,
+			};
+			SDL_GPURenderPass* renderPass = SDL_BeginGPURenderPass(commandBuffer, &targetInfo, 1, nullptr);
+
+			ImGui_ImplSDLGPU3_RenderDrawData(drawData, commandBuffer, renderPass);
+			SDL_EndGPURenderPass(renderPass);
+		}
+		// Update and Render additional Platform Windows
+		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+		}
+
+		SDL_SubmitGPUCommandBuffer(commandBuffer);
 	}
 
-	float Window::getOpacity() const {
-		if (window_) {
-			return SDL_GetWindowOpacity(window_);
-		}
-		return opacity_;
-	}
-
-	void Window::setBordered(bool bordered) {
-		if (window_) {
-			SDL_SetWindowBordered(window_, bordered);
-			spdlog::info("[sdl::Window] Window border: {}", bordered);
-		} else {
-			bordered_ = bordered;
-		}
+	void Window::renderFrame(const DeltaTime& deltaTime, SDL_GPUTexture* swapchainTexture, SDL_GPUCommandBuffer* commandBuffer) {
+		SDL_GPUColorTargetInfo targetInfo{
+			.texture = swapchainTexture,
+			.clear_color = clearColor_,
+			.load_op = SDL_GPU_LOADOP_CLEAR,
+			.store_op = SDL_GPU_STOREOP_STORE,
+		};
+		SDL_GPURenderPass* renderPass = SDL_BeginGPURenderPass(commandBuffer, &targetInfo, 1, nullptr);
+		SDL_EndGPURenderPass(renderPass);
 	}
 
 	void Window::setPosition(int x, int y) {
@@ -165,35 +268,17 @@ namespace sdl {
 			y_ = y;
 		}
 	}
-
-	void Window::setAlwaysOnTop(bool always) {
-		if (window_) {
-			spdlog::warn("[sdl::Window] Not supported after window creation!");
-		} else {
-			alwaysOnTop_ = always;
-		}
-	}
-
-	bool Window::isAlwaysOnTop() const {
-		return alwaysOnTop_;
-	}
-
-	void Window::setResizeable(bool resizable) {
-		if (window_) {
-			SDL_SetWindowResizable(window_, resizable);
-			spdlog::info("[sdl::Window] Window resizeable: {}", resizable);
-		} else {
-			resizable_ = resizable;
-		}
-	}
-
-	void Window::setIcon(const std::string& icon) {
+	void Window::setIcon(const std::string& iconPath) {
 		if (icon_) {
 			SDL_DestroySurface(icon_);
 			icon_ = nullptr;
 		}
-		//icon_ = IMG_Load(icon.c_str());
-		if (window_ && icon_) {
+		icon_ = IMG_Load(iconPath.c_str());
+		if (!icon_) {
+			spdlog::error("[sdl::Window] Failed to load icon: {}", SDL_GetError());
+			return;
+		}
+		if (window_) {
 			SDL_SetWindowIcon(window_, icon_);
 			SDL_DestroySurface(icon_);
 			icon_ = nullptr;
@@ -207,53 +292,8 @@ namespace sdl {
 		} else {
 			title_ = title;
 		}
-	}
-
-	Size Window::getSize() const {
-		if (window_) {
-			Size size;
-			SDL_GetWindowSize(window_, &size.width, &size.height);
-			return size;
-		}
-		return {width_, height_};;
-	}
-
-	Size Window::getMinSize() const {
-		if (window_) {
-			Size size;
-			SDL_GetWindowMinimumSize(window_, &size.width, &size.height);
-			return size;
-		}
-		return {minWidth_, minHeight_};;
-	}
-
-	Size Window::getMaxSize() const {
-		if (window_) {
-			Size size;
-			SDL_GetWindowMaximumSize(window_, &size.width, &size.height);
-			return size;
-		}
-		return {maxWidth_, maxHeight_};;
-	}
-
-	Size Window::getDrawableSize() const {
-		if (window_) {
-			Size size;
-			SDL_GetWindowSizeInPixels(window_, &size.width, &size.height);
-			return size;
-		}
-		return {width_, height_};;
-	}
-
-	Position Window::getWindowPosition() const {
-		if (window_) {
-			Position position;
-			SDL_GetWindowPosition(window_, &position.x, &position.y);
-			return position;
-		}
-		return {x_, y_};
-	}
-
+	}	
+	
 	void Window::setSize(int width, int height) {
 		if (window_) {
 			if (width < 1 || height < 1) {
@@ -268,54 +308,6 @@ namespace sdl {
 			height_ = height;
 		}
 	}
-
-	void Window::setMinSize(int width, int height) {
-		if (window_) {
-			if (width < 1 || height < 1) {
-				return;
-			}
-
-			spdlog::info("[sdl::Window] Setting min size: (w, h) = ({}, {})", width, height);
-			SDL_SetWindowMinimumSize(window_, width, height);
-		} else {
-			minWidth_ = width;
-			minHeight_ = height;
-		}
-	}
-
-	void Window::setMaxSize(int width, int height) {
-		if (window_) {
-			assert(width > 0 && height > 0);
-
-			spdlog::info("[sdl::Window] Setting max size: (w, h) = ({}, {})", width, height);
-			SDL_SetWindowMaximumSize(window_, width, height);
-		} else {
-			maxWidth_ = width;
-			maxHeight_ = height;
-		}
-	}
-
-	int Window::getWidth() const noexcept {
-		return getSize().width;
-	}
-
-	int Window::getHeight() const noexcept {
-		return getSize().height;
-	}
-
-	void Window::setFullScreen(bool fullScreen) {
-		if (window_) {
-			spdlog::info("[sdl::Window] Fullscreen is activated: {}", fullScreen);
-			SDL_SetWindowFullscreen(window_, fullScreen);
-		} else {
-			fullScreen_ = fullScreen;
-		}
-	}
-
-	bool Window::isFullScreen() const {
-		return fullScreen_;
-	}
-
 	SDL_HitTestResult Window::hitTestCallback(SDL_Window* sdlWindow, const SDL_Point* area, void* data) {
 		return static_cast<Window*>(data)->onHitTest_(*area);
 	}
@@ -330,5 +322,21 @@ namespace sdl {
 			SDL_SetWindowHitTest(window_, nullptr, this);
 		}
 	}
+
+	/*
+	Sprite Window::loadTextureToGpu(const Surface& surface, const SDL_GPUSamplerCreateInfo& samplerCreateInfo) {
+		//Texture texture{}
+
+		//auto& texture = textures_.emplace_back(Texture::createTexture(gpuDevice_, surface, samplerCreateInfo));
+		//return Sprite{texture->getSamplerBinding()};
+		return {};
+	}
+
+	Sprite Window::loadTextureToGpu(const Surface& surface) {
+		//auto& texture = textures_.emplace_back(Texture::createTexture(gpuDevice_, surface));
+		//return Sprite{texture->getSamplerBinding()};
+		return {};
+	}
+	*/
 
 }

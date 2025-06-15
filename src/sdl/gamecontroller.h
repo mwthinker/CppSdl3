@@ -1,7 +1,7 @@
 #ifndef CPPSDL3_SDL_GAMECONTROLLER_H
 #define CPPSDL3_SDL_GAMECONTROLLER_H
 
-#include <SDL3/SDL.h>
+#include "util.h"
 
 #include <string>
 
@@ -21,7 +21,6 @@ namespace sdl {
 		static void removeController(GameController&& gameController);
 
 		GameController() noexcept = default;
-		~GameController();
 
 		GameController(GameController&& other) noexcept;
 		GameController& operator=(GameController&& other) noexcept;
@@ -58,28 +57,28 @@ namespace sdl {
 
 		void close();
 
-		SDL_Gamepad* gameController_ = nullptr;
+		SdlGamepadPtr gameController_;
 		SDL_GUID guid_{};
 	};
 
 	inline SDL_Gamepad* GameController::getSdlGameController() const {
-		return gameController_;
+		return gameController_.get();
 	}
 
 	inline bool GameController::getButtonState(SDL_GamepadButton button) const {
-		return SDL_GetGamepadButton(gameController_, button) != 0;
+		return SDL_GetGamepadButton(gameController_.get(), button) != 0;
 	}
 
 	inline float GameController::getAxisState(SDL_GamepadAxis axis) const {
-		return static_cast<float>(SDL_GetGamepadAxis(gameController_, axis) / sizeof(Sint16));
+		return static_cast<float>(SDL_GetGamepadAxis(gameController_.get(), axis) / sizeof(Sint16));
 	}
 
 	inline bool GameController::isAttached() const {
-		return SDL_GamepadConnected(gameController_);
+		return SDL_GamepadConnected(gameController_.get());
 	}
 
 	inline SDL_JoystickID GameController::getInstanceId() const {
-		return SDL_GetJoystickID(SDL_GetGamepadJoystick(gameController_));
+		return SDL_GetJoystickID(SDL_GetGamepadJoystick(gameController_.get()));
 	}
 
 }

@@ -3,7 +3,7 @@ project(ImGui
 		"ImGui branch: https://github.com/ocornut/imgui"
 	LANGUAGES
 		CXX
-	# > VERSION 1.91.94
+	VERSION 1.92.0
 )
 
 include(FetchContent)
@@ -11,7 +11,7 @@ FetchContent_Declare(RemoteImGui
 	GIT_REPOSITORY
 		https://github.com/ocornut/imgui.git
 	GIT_TAG
-		eaac68ca2ce404137d7a1e7d8f74fafbfe30f508
+		92e2df59781d441d83cda284eccfe8dec8d0f7ad
 )
 FetchContent_MakeAvailable(RemoteImGui)
 FetchContent_GetProperties(RemoteImGui
@@ -40,6 +40,7 @@ add_library(ImGui
 	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdl3.h
 	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.cpp
 	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.h
+	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3_shaders.h
 	${RemoteImGui_SOURCE_DIR}/misc/debuggers/imgui.natvis
 	${RemoteImGui_SOURCE_DIR}/misc/debuggers/imgui.natstepfilter
 	${IMGUI_USER_CONFIG}
@@ -56,10 +57,10 @@ target_include_directories(ImGui
 )
 
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
+find_package(glm CONFIG REQUIRED)
 find_package(SDL3_image CONFIG REQUIRED)
 find_package(SDL3_ttf CONFIG REQUIRED)
 find_package(freetype CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
 
 target_link_libraries(ImGui
 	PUBLIC
@@ -67,7 +68,7 @@ target_link_libraries(ImGui
 		$<IF:$<TARGET_EXISTS:SDL3_image::SDL3_image-shared>,SDL3_image::SDL3_image-shared,SDL3_image::SDL3_image-static>
 		$<IF:$<TARGET_EXISTS:SDL3_ttf::SDL3_ttf>,SDL3_ttf::SDL3_ttf,SDL3_ttf::SDL3_ttf-static>
 		freetype
-		fmt::fmt
+		glm::glm
 )
 
 target_compile_definitions(ImGui
@@ -79,6 +80,7 @@ target_compile_definitions(ImGui
 		IMGUI_USER_CONFIG=\"${IMGUI_USER_CONFIG}\"
 		IMGUI_DEFINE_MATH_OPERATORS
 		GLM_ENABLE_EXPERIMENTAL
+		GLM_FORCE_DEFAULT_ALIGNED_GENTYPES # To be compatible with UBO that assumes std140 layout
 )
 
 set_target_properties(ImGui

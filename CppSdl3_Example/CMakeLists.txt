@@ -6,8 +6,6 @@ project(CppSdl3_Example
 )
 
 set(SOURCES
-	src/testimguiwindow.cpp
-	src/testimguiwindow.h
 	src/types.h
 	src/main.cpp
 	src/testwindow.cpp

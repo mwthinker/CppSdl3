@@ -2,7 +2,8 @@
 #define CPPSDL3_SDL_WINDOW_H
 
 #include "color.h"
-#include "rect.h"
+#include "gpu/gpucontext.h"
+#include "util.h"
 
 #include <SDL3/SDL.h>
 
@@ -10,13 +11,11 @@
 #include <string>
 #include <utility>
 #include <functional>
+#include <memory>
 
 namespace sdl {
 
-	using Clock = std::chrono::high_resolution_clock;
-	using DeltaTime = std::chrono::high_resolution_clock::duration;
-
-	// Create a window which handle all user input. The graphic is rendered using OpenGL.
+	// Create a window which handle all user input. The graphic is rendered using SDL_gpu.
 	class Window {
 	public:
 		using HitTestCallback = std::function<SDL_HitTestResult(const SDL_Point&)>;
@@ -36,26 +35,6 @@ namespace sdl {
 		// call to the function quit().
 		void startLoop();
 
-		void setFullScreen(bool fullScreen);
-
-		bool isFullScreen() const;
-
-		Size getSize() const;
-
-		Size getMinSize() const;
-
-		Size getMaxSize() const;
-
-		Size getDrawableSize() const;
-
-		Position getWindowPosition() const;
-
-		// Return the current windows width in pixels.
-		int getWidth() const noexcept;
-
-		// Return the current windows height in pixels.
-		int getHeight() const noexcept;
-
 		// Make the program to quit as soon as the current frame is finished.
 		// I.e. the loop in startLoop() will be made to stop and startLoop() will return.
 		void quit() noexcept;
@@ -69,27 +48,12 @@ namespace sdl {
 		//  Return the renderer pointer. Use with care.
 		SDL_GPUDevice* getSdlGpuDevice() const noexcept;
 
-		void setAlwaysOnTop(bool always);
-		bool isAlwaysOnTop() const;
-
-		void setOpacity(float value);
-		float getOpacity() const;
-
 		void setPosition(int x, int y);
 
-		void setBordered(bool bordered);
-
-		void setResizeable(bool resizable);
-
+		void setSize(int width, int height);
 		void setIcon(const std::string& icon);
 
 		void setTitle(const std::string& title);
-
-		void setSize(int width, int height);
-
-		void setMinSize(int width, int height);
-
-		void setMaxSize(int width, int height);
 
 		void setClearColor(Color color) noexcept;
 
@@ -107,16 +71,34 @@ namespace sdl {
 			return static_cast<bool>(onHitTest_);
 		}
 
+		bool isShowDemoWindow() const;
+		void setShowDemoWindow(bool show);
+
+		bool isShowColorWindow() const;
+		void setShowColorWindow(bool show);
+
 	protected:
-		virtual void initPreLoop() {}
-
-		// Is called each loop cycle.
-		virtual void update(const DeltaTime& deltaTime) {}
+		virtual void preLoop() {}
+		virtual void postLoop() {}
 		
-		// Is called each loop cycle until all windowEvents are called.
-		virtual void eventUpdate(const SDL_Event& windowEvent) {}
+		// Is called each loop cycle until the event queue is empty.
+		virtual void processEvent(const SDL_Event& windowEvent) {}
+		virtual void renderImGui(const DeltaTime& deltaTime) {};
+		
+		// Override to add custom SDL_gpu rendering that is drawn before the ImGui rendering.
+		// Any override should clear the swapchainTexture.
+		// Default implementation clears the screen with the clear color.
+		virtual void renderFrame(const DeltaTime& deltaTime, SDL_GPUTexture* swapchainTexture, SDL_GPUCommandBuffer* commandBuffer);
 
+		SDL_Window* window_ = nullptr;
+		Color clearColor_;
+		std::chrono::nanoseconds sleepingTime_{};
+		bool quit_ = false;
+		gpu::GpuContext gpuContext_;
 	private:
+		// Is called each frame.
+		void renderFrame(const DeltaTime& deltaTime);
+
 		static SDL_HitTestResult hitTestCallback(SDL_Window* sdlWindow, const SDL_Point* area, void* data);
 
 		static constexpr int DefaultWidth = 800;
@@ -124,31 +106,18 @@ namespace sdl {
 
 		void runLoop();
 
-		std::string title_;
-
 		HitTestCallback onHitTest_;
-		SDL_Window* window_ = nullptr;
-		SDL_GPUDevice* gpuDevice_ = nullptr;
 		SDL_Surface* icon_ = nullptr;
 		
+		std::string title_;
 		int width_ = DefaultWidth;
 		int height_ = DefaultHeight;
 		int x_ = SDL_WINDOWPOS_UNDEFINED;
 		int y_ = SDL_WINDOWPOS_UNDEFINED;
-		int minWidth_ = -1;
-		int minHeight_ = -1;
-		int maxWidth_ = -1;
-		int maxHeight_ = -1;
 		
-		std::chrono::nanoseconds sleepingTime_{};
-		Color clearColor_;
-		
-		bool alwaysOnTop_ = false;
-		float opacity_ = 1.f;
-		bool quit_ = false;
-		bool fullScreen_ = false;
-		bool bordered_ = true;
-		bool resizable_ = true;
+		bool showDemoWindow_ = false;
+		bool showColorWindow_ = false;
+		SDL_WindowFlags flags_ = SDL_WINDOW_RESIZABLE;
 	};
 
 	inline void Window::quit() noexcept {
@@ -164,7 +133,7 @@ namespace sdl {
 	}
 
 	inline SDL_GPUDevice* Window::getSdlGpuDevice() const noexcept {
-		return gpuDevice_;
+		return gpuContext_.getGpuDevice();
 	}
 
 	inline void Window::setClearColor(Color color) noexcept {
@@ -177,6 +146,22 @@ namespace sdl {
 
 	inline std::chrono::nanoseconds Window::getLoopSleepingTime() const noexcept {
 		return sleepingTime_;
+	}
+
+	inline bool Window::isShowDemoWindow() const {
+		return showDemoWindow_;
+	}
+
+	inline void Window::setShowDemoWindow(bool show) {
+		showDemoWindow_ = show;
+	}
+
+	inline bool Window::isShowColorWindow() const {
+		return showColorWindow_;
+	}
+
+	inline void Window::setShowColorWindow(bool show) {
+		showColorWindow_ = show;
 	}
 
 }
