@@ -5,7 +5,6 @@ include(CMakeFindDependencyMacro)
 # Find dependencies
 find_dependency(SDL3 CONFIG REQUIRED)
 find_dependency(SDL3_image CONFIG REQUIRED)
-find_dependency(SDL3_mixer CONFIG REQUIRED)
 find_dependency(SDL3_ttf CONFIG REQUIRED)
 find_dependency(freetype CONFIG REQUIRED)
 find_dependency(glm CONFIG REQUIRED)
