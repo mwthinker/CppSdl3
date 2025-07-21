@@ -4,7 +4,7 @@ project(CppSdl3
 		"A C++ Wrapper of SDL3"
 	LANGUAGES
 		CXX
-	VERSION 0.1.0
+	VERSION 0.1.1
 )
 
 set(SOURCES
@@ -37,7 +37,9 @@ set(SOURCES
 	CMakePresets.json
 	cppsdl3.natstepfilter
 )
-add_library(CppSdl3 ${SOURCES})
+add_library(CppSdl3 STATIC
+	${SOURCES}
+)
 add_library(CppSdl3::CppSdl3 ALIAS CppSdl3)
 add_subdirectory(ImGui)
 
