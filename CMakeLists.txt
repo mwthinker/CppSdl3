@@ -35,7 +35,7 @@ set(SOURCES
 
 	vcpkg.json
 	CMakePresets.json
-	CppSdl3.natstepfilter
+	cppsdl3.natstepfilter
 )
 add_library(CppSdl3 ${SOURCES})
 add_library(CppSdl3::CppSdl3 ALIAS CppSdl3)

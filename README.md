@@ -1,10 +1,10 @@
 # sdl::CppSdl3 [![CI build](https://github.com/mwthinker/CppSdl3/actions/workflows/ci.yml/badge.svg)](https://github.com/mwthinker/CppSdl3/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-A C++ wrapper around SDL3 (Simple Direct Media Layer)
+A C++ wrapper around SDL3 (Simple Direct Media Layer) using SDL_gpu together with ImGui (Dear ImGui).
 
 ## Developer environment
 This project is developed using [vcpkg](https://github.com/microsoft/vcpkg.git) and [CMake](https://cmake.org/).
 
-Aassuming in a unix host otherwise change to "windows"
+Aassuming unix host otherwise change to "windows"
 ```bash
 git clone https://github.com/mwthinker/CppSdl3; cd CppSdl3
 mkdir build
@@ -38,14 +38,14 @@ target_link_libraries(<YourProject>
 In code main.cpp
 
 ```cpp
-#include <sdl/imguiwindow.h>
+#include <sdl/window.h>
 
-class ExampleWindow : public sdl::ImGuiWindow {
+class ExampleWindow : public sdl::Window {
 public:
     ExampleWindow() = default;
 
 private:
-    void imGuiUpdate(const sdl::DeltaTime& deltaTime) override {
+    void renderImGui(const sdl::DeltaTime& deltaTime) override {
         ImGui::MainWindow("ExampleWindow", [this](){
             if (ImGui::Button("Quit")) {
                 quit();
@@ -53,7 +53,7 @@ private:
         });
     }
 
-    void imGuiEventUpdate(const SDL_Event& windowEvent) override {
+    void processEvent(const SDL_Event& windowEvent) override {
         switch (windowEvent.type) {
             case SDL_WINDOWEVENT:
                 switch (windowEvent.window.event) {
@@ -74,10 +74,6 @@ private:
                 break;
         }
     }
-
-    std::vector<std::unique_ptr<mwetris::ui::SubWindow>> subWindows_;
-    std::shared_ptr<mwetris::game::DeviceManager> deviceManager_;
-    std::shared_ptr<mwetris::network::DebugServer> debugServer_;
 };
 
 int main() {

@@ -406,16 +406,16 @@ void TestWindow::preLoop() {
 
 void TestWindow::renderImGui(const sdl::DeltaTime& deltaTime) {
 	ImGui::MainWindow("Main", [&]() {
-	ImGui::Button("Hello", {100, 100});
-	if (ImGui::Button("Hello2", {50, 50})) {
-		spdlog::info("Hello2 pressed");
-	}
-	//ImGui::Image(sprite_, glm::vec2{124, 124});
-	//ImGui::Image(sprite_, glm::vec2{64, 64});
-	//ImGui::ImageWithBg(sprite_, glm::vec2{64, 64}, sdl::color::Red, sdl::color::Green);
-	//ImGui::Hexagon(sprite_, 64.f, true);
-	//static int counter = 0;
-	//if (ImGui::ImageButton("Button", sprite_, glm::vec2{32, 32})) { spdlog::info("Button pressed {}", ++counter); }
+		ImGui::Button("Hello", {100, 100});
+		if (ImGui::Button("Hello2", {50, 50})) {
+			spdlog::info("Hello2 pressed");
+		}
+		//ImGui::Image(sprite_, glm::vec2{124, 124});
+		//ImGui::Image(sprite_, glm::vec2{64, 64});
+		//ImGui::ImageWithBg(sprite_, glm::vec2{64, 64}, sdl::color::Red, sdl::color::Green);
+		//ImGui::Hexagon(sprite_, 64.f, true);
+		//static int counter = 0;
+		//if (ImGui::ImageButton("Button", sprite_, glm::vec2{32, 32})) { spdlog::info("Button pressed {}", ++counter); }
 	});
 }
 
