@@ -53,10 +53,10 @@ target_include_directories(ImGui
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 		$<BUILD_INTERFACE:${RemoteImGui_SOURCE_DIR}>
 		$<BUILD_INTERFACE:${RemoteImGui_SOURCE_DIR}/backends>
-		$<INSTALL_INTERFACE:include/cppsdl3/Imgui>
+		$<INSTALL_INTERFACE:include/cppsdl3/imgui>
 )
 
-find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
+find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3)
 find_package(glm CONFIG REQUIRED)
 find_package(SDL3_image CONFIG REQUIRED)
 find_package(SDL3_ttf CONFIG REQUIRED)
@@ -66,7 +66,7 @@ target_link_libraries(ImGui
 	PUBLIC
 		SDL3::SDL3
 		$<IF:$<TARGET_EXISTS:SDL3_image::SDL3_image-shared>,SDL3_image::SDL3_image-shared,SDL3_image::SDL3_image-static>
-		$<IF:$<TARGET_EXISTS:SDL3_ttf::SDL3_ttf>,SDL3_ttf::SDL3_ttf,SDL3_ttf::SDL3_ttf-static>
+		SDL3_ttf::SDL3_ttf
 		freetype
 		glm::glm
 )
@@ -118,6 +118,7 @@ install(FILES
 install(FILES
 	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.h
 	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdl3.h
+	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3_shaders.h
 	${RemoteImGui_SOURCE_DIR}/imgui.h
 	${RemoteImGui_SOURCE_DIR}/imgui_internal.h
 	${RemoteImGui_SOURCE_DIR}/imstb_rectpack.h

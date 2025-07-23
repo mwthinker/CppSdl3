@@ -4,7 +4,7 @@ project(CppSdl3
 		"A C++ Wrapper of SDL3"
 	LANGUAGES
 		CXX
-	VERSION 0.1.1
+	VERSION 0.2.0
 )
 
 set(SOURCES
@@ -76,7 +76,8 @@ target_compile_definitions(CppSdl3
 
 target_include_directories(CppSdl3
 	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+		$<INSTALL_INTERFACE:include/cppsdl3>
 )
 
 find_package(spdlog CONFIG REQUIRED)
@@ -84,7 +85,7 @@ find_package(fmt CONFIG REQUIRED)
 
 target_link_libraries(CppSdl3
 	PUBLIC
-		ImGui
+		CppSdl3::ImGui
 		spdlog::spdlog_header_only
 		fmt::fmt
 )
@@ -150,7 +151,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CppSdl3Config.cmake
 )
 
 # Install the package configuration file
-include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
 	${CMAKE_CURRENT_BINARY_DIR}/CppSdl3ConfigVersion.cmake
 	VERSION ${PROJECT_VERSION}

@@ -9,7 +9,7 @@ namespace sdl::gpu {
 	[[nodiscard]]
 	GpuTexture uploadSurface(GpuContext& context, SDL_Surface* surface);
 
-	void blitToTexture(GpuContext& context, GpuTexture& texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border);
+	SDL_Rect blitToTexture(GpuContext& context, GpuTexture& texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border);
 
 }
 

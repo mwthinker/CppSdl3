@@ -75,7 +75,7 @@ namespace sdl::gpu {
 		return texture;
 	}
 
-	void blitToTexture(GpuContext& context, GpuTexture& texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border) {
+	SDL_Rect blitToTexture(GpuContext& context, GpuTexture& texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border) {
 		auto convertedSurfacePtr = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(nullptr);
 		if (surface->format != SDL_PIXELFORMAT_RGBA32) {
 			convertedSurfacePtr.reset(SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32));
@@ -84,7 +84,7 @@ namespace sdl::gpu {
 
 		auto rectOptional = imageAtlas.add(surface->w, surface->h, border);
 		if (!rectOptional) {
-			return; // Not enough space in the atlas.
+			throw sdl::SdlException{"Failed to blit surface to atlas"};
 		}
 		auto rect = *rectOptional;
 
@@ -134,6 +134,8 @@ namespace sdl::gpu {
 		if (!SDL_SubmitGPUCommandBuffer(uploadCmdBuf)) {
 			throw sdl::SdlException{"Failed to submit command buffer"};
 		}
+
+		return rect;
 	}
 
 }
