@@ -8,15 +8,7 @@
 namespace sdl::gpu {
 	
 	GpuContext::~GpuContext() {
-		flushDeferredReleases();
-		if (gpuDevice_) {
-			if (!SDL_WaitForGPUIdle(gpuDevice_)) {
-				spdlog::error("[GpuContext] SDL_WaitForGPUIdle failed: {}", SDL_GetError());
-			}
-			SDL_DestroyGPUDevice(gpuDevice_);
-			gpuDevice_ = nullptr;
-		}
-		window_ = nullptr;
+		shutdown();
 	}
 
 	bool GpuContext::initialize(SDL_Window* window) {

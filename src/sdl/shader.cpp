@@ -41,7 +41,7 @@ namespace sdl {
 			pxCreateInfo.code = ShaderPsDxilBytes.data();
 			pxCreateInfo.format = SDL_GPU_SHADERFORMAT_DXIL;
 		} else {
-			throw sdl::SdlException("[Shader] Unsupported GPU driver for shader loading: " + std::string(driver));
+			throw sdl::SdlException("[Shader] Unsupported GPU driver for shader loading '{}'", driver);
 		}
 		vertexShader = createShader(context, vxCreateInfo);
 		fragmentShader = createShader(context, pxCreateInfo);

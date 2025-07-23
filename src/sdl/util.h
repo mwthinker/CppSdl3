@@ -9,7 +9,8 @@
 #include <span>
 #include <string>
 
-#include <SDL3_image/SDL_image.h>
+#include <SDL3/SDL_surface.h>
+#include <SDL3/SDL_gamepad.h>
 
 namespace sdl {
 
@@ -59,7 +60,13 @@ namespace sdl {
 	using Clock = std::chrono::high_resolution_clock;
 	using DeltaTime = std::chrono::high_resolution_clock::duration;
 
-	SdlSurfacePtr createSurfaceAtlas(std::span<std::string> files, int width, int height, int border = 0);
+	/// @brief Adds an image to the atlas and returns the rectangle where it was added. Throws an exception if the image cannot be added.
+	/// @param atlas 
+	/// @param surfaceAtlas 
+	/// @param filename 
+	/// @param border 
+	/// @return SDL_Rect where the image was added in the atlas.
+	SDL_Rect addImage(sdl::ImageAtlas& atlas, SDL_Surface* surfaceAtlas, const std::string& filename, int border = 0);
 
 }
 
