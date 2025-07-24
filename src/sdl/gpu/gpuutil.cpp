@@ -84,7 +84,7 @@ namespace sdl::gpu {
 
 		auto rectOptional = imageAtlas.add(surface->w, surface->h, border);
 		if (!rectOptional) {
-			throw sdl::SdlException{"Failed to blit surface to atlas"};
+			throw std::runtime_error{"Failed to blit surface to atlas"};
 		}
 		auto rect = *rectOptional;
 

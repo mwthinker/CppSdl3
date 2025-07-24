@@ -45,8 +45,9 @@ namespace sdl {
 		// Return the window pointer. Use with care.
 		SDL_Window* getSdlWindow() const noexcept;
 
-		//  Return the renderer pointer. Use with care.
-		SDL_GPUDevice* getSdlGpuDevice() const noexcept;
+		gpu::GpuContext& getGpuContext() noexcept {
+			return gpuContext_;
+		}
 
 		void setPosition(int x, int y);
 
@@ -130,10 +131,6 @@ namespace sdl {
 
 	inline SDL_Window* Window::getSdlWindow() const noexcept {
 		return window_;
-	}
-
-	inline SDL_GPUDevice* Window::getSdlGpuDevice() const noexcept {
-		return gpuContext_.getGpuDevice();
 	}
 
 	inline void Window::setClearColor(Color color) noexcept {
