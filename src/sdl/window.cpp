@@ -62,11 +62,19 @@ namespace sdl {
 
 		[[nodiscard]] SDL_GPUDevice* initialize(SDL_Window* window) {
 			int driversNbr = SDL_GetNumGPUDrivers();
+			const char* preferredDriver = nullptr;
 			for (int i = 0; i < driversNbr; ++i) {
-				spdlog::info("[GpuContext] Preferred GPU driver: {}", SDL_GetGPUDriver(i));
+				auto driver = SDL_GetGPUDriver(i);
+				spdlog::info("[GpuContext] GPU driver available: {}", driver);
+				if (std::strcmp(driver, "direct3d12") == 0) {
+					preferredDriver = driver;
+				}
+			}
+			if (preferredDriver != nullptr) {
+				spdlog::info("[GpuContext] Preferred GPU driver: {}", preferredDriver);
 			}
 
-			auto gpuDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, true, nullptr);
+			auto gpuDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, true, preferredDriver);
 			if (!gpuDevice) {
 				throw SdlException{"[GpuContext] Failed to create GPU device: {}", SDL_GetError()};
 			}
@@ -75,6 +83,8 @@ namespace sdl {
 				SDL_DestroyGPUDevice(gpuDevice);
 				throw SdlException{"[GpuContext] Failed to claim window for GPU device: {}", SDL_GetError()};
 			}
+
+			spdlog::info("[GpuContext] GPU driver used: {}", SDL_GetGPUDeviceDriver(gpuDevice));
 			return gpuDevice;
 		}
 

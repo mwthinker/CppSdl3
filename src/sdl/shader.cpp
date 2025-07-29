@@ -24,7 +24,7 @@ namespace sdl {
 		};
 
 		auto driver = SDL_GetGPUDeviceDriver(gpuDevice);
-		if (strcmp(driver, "vulkan") == 0) {
+		if (std::strcmp(driver, "vulkan") == 0) {
 			vxCreateInfo.code_size = ShaderVsSpirvBytes.size();
 			vxCreateInfo.code = ShaderVsSpirvBytes.data();
 			vxCreateInfo.format = SDL_GPU_SHADERFORMAT_SPIRV;
@@ -32,7 +32,7 @@ namespace sdl {
 			pxCreateInfo.code_size = ShaderPsSpirvBytes.size();
 			pxCreateInfo.code = ShaderPsSpirvBytes.data();
 			pxCreateInfo.format = SDL_GPU_SHADERFORMAT_SPIRV;
-		} else if (strcmp(driver, "direct3d12") == 0) {
+		} else if (std::strcmp(driver, "direct3d12") == 0) {
 			vxCreateInfo.code_size = ShaderVsDxilBytes.size();
 			vxCreateInfo.code = ShaderVsDxilBytes.data();
 			vxCreateInfo.format = SDL_GPU_SHADERFORMAT_DXIL;
