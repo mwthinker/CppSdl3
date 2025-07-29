@@ -1,7 +1,6 @@
 #ifndef CPPSDL3_SDL_SDLGPU_H
 #define CPPSDL3_SDL_SDLGPU_H
 
-#include "gpucontext.h"
 #include "gpuresource.h"
 #include "gpuutil.h"
 
@@ -24,10 +23,10 @@ namespace sdl::gpu {
 	}
 
 	template<std::ranges::contiguous_range T>
-	void mapTransferBuffer(GpuContext& gpuContext, GpuTransferBuffer& transferBuffer, const T& data, bool cycle = false) {
-		auto bufferData = SDL_MapGPUTransferBuffer(gpuContext.getGpuDevice(), transferBuffer.get(), cycle);
+	void mapTransferBuffer(SDL_GPUDevice* gpuDevice, GpuTransferBuffer& transferBuffer, const T& data, bool cycle = false) {
+		auto bufferData = SDL_MapGPUTransferBuffer(gpuDevice, transferBuffer.get(), cycle);
 		SDL_memcpy(bufferData, std::ranges::data(data), std::ranges::size(data) * sizeof(std::ranges::range_value_t<T>));
-		SDL_UnmapGPUTransferBuffer(gpuContext.getGpuDevice(), transferBuffer.get());
+		SDL_UnmapGPUTransferBuffer(gpuDevice, transferBuffer.get());
 	}
 
 }

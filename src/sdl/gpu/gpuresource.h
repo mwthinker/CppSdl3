@@ -1,7 +1,6 @@
 #ifndef CPPSDL3_SDL_GPU_GPURESOURCE_H
 #define CPPSDL3_SDL_GPU_GPURESOURCE_H
 
-#include "gpucontext.h"
 #include "../sdlexception.h"
 
 #include <SDL3/SDL.h>
@@ -13,7 +12,7 @@
 namespace sdl::gpu {
 
 	/// @brief RAII wrapper for GPU resources in SDL. 
-	/// Important! To destruct/reset the resource before the GpuContext is shutdown!
+	/// Important! Must destruct/reset the resource before SDL_GPUDevice* is destroyed!
 	/// @tparam Resource
 	/// @tparam ReleaseFunc 
 	template <typename Resource, auto ReleaseFunc>
@@ -25,21 +24,21 @@ namespace sdl::gpu {
 
 		GpuResource(GpuResource&& other) noexcept
 			: resource_(std::exchange(other.resource_, nullptr))
-			, context_(std::exchange(other.context_, nullptr)) {
+			, gpuDevice_(std::exchange(other.gpuDevice_, nullptr)) {
 		}
 
 		GpuResource& operator=(GpuResource&& other) noexcept {
 			reset();
 
 			resource_ = std::exchange(other.resource_, nullptr);
-			context_ = std::exchange(other.context_, nullptr);
+			gpuDevice_ = std::exchange(other.gpuDevice_, nullptr);
 			return *this;
 		}
 
 		~GpuResource() {
-			if (resource_ && context_) {
-				ReleaseFunc(context_->getGpuDevice(), resource_);
-			} else if (resource_ && !context_) {
+			if (resource_ && gpuDevice_) {
+				ReleaseFunc(gpuDevice_, resource_);
+			} else if (resource_ && !gpuDevice_) {
 				spdlog::warn("[GpuResource] Resource destroyed without an associated GpuContext! Potential leak!");
 			}
 		}
@@ -53,10 +52,10 @@ namespace sdl::gpu {
 		}
 
 		template<typename CreateFunc, typename... Args>
-		static GpuResource<Resource, ReleaseFunc> create(GpuContext& context, CreateFunc createFunc, Args&&... args) {
+		static GpuResource<Resource, ReleaseFunc> create(SDL_GPUDevice* gpuDevice, CreateFunc createFunc, Args&&... args) {
 			GpuResource<Resource, ReleaseFunc> resource;
-			resource.context_ = &context;
-			resource.resource_ = createFunc(context.getGpuDevice(), std::forward<Args>(args)...);
+			resource.gpuDevice_ = gpuDevice;
+			resource.resource_ = createFunc(gpuDevice, std::forward<Args>(args)...);
 			if (!resource.resource_) {
 				throw sdl::SdlException("Failed to create GPU resource");
 			}
@@ -64,10 +63,10 @@ namespace sdl::gpu {
 		}
 
 		void reset() {
-			if (resource_ && context_) {
-				ReleaseFunc(context_->getGpuDevice(), resource_);
+			if (resource_ && gpuDevice_) {
+				ReleaseFunc(gpuDevice_, resource_);
 				resource_ = nullptr;
-				context_ = nullptr;
+				gpuDevice_ = nullptr;
 			} else if (resource_) {
 				spdlog::warn("[GpuResource] Resource released without an associated GpuContext! Potential leak!");
 			}
@@ -75,7 +74,7 @@ namespace sdl::gpu {
 
 	private:
 		Resource* resource_ = nullptr;
-		GpuContext* context_ = nullptr;
+		SDL_GPUDevice* gpuDevice_ = nullptr;
 	};
 
 	using GpuSampler = GpuResource<SDL_GPUSampler, SDL_ReleaseGPUSampler>;
@@ -86,32 +85,32 @@ namespace sdl::gpu {
 	using GpuComputePipeline = GpuResource<SDL_GPUComputePipeline, SDL_ReleaseGPUComputePipeline>;
 	using GpuTransferBuffer = GpuResource<SDL_GPUTransferBuffer, SDL_ReleaseGPUTransferBuffer>;
 
-	inline GpuSampler createSampler(GpuContext& context, const SDL_GPUSamplerCreateInfo& createInfo) {
-		return GpuSampler::create(context, SDL_CreateGPUSampler, &createInfo);
+	inline GpuSampler createSampler(SDL_GPUDevice* gpuDevice, const SDL_GPUSamplerCreateInfo& createInfo) {
+		return GpuSampler::create(gpuDevice, SDL_CreateGPUSampler, &createInfo);
 	}
 
-	inline GpuTexture createTexture(GpuContext& context, const SDL_GPUTextureCreateInfo& createInfo) {
-		return GpuTexture::create(context, SDL_CreateGPUTexture, &createInfo);
+	inline GpuTexture createTexture(SDL_GPUDevice* gpuDevice, const SDL_GPUTextureCreateInfo& createInfo) {
+		return GpuTexture::create(gpuDevice, SDL_CreateGPUTexture, &createInfo);
 	}
 
-	inline GpuBuffer createBuffer(GpuContext& context, const SDL_GPUBufferCreateInfo& createInfo) {
-		return GpuBuffer::create(context, SDL_CreateGPUBuffer, &createInfo);
+	inline GpuBuffer createBuffer(SDL_GPUDevice* gpuDevice, const SDL_GPUBufferCreateInfo& createInfo) {
+		return GpuBuffer::create(gpuDevice, SDL_CreateGPUBuffer, &createInfo);
 	}
 
-	inline GpuShader createShader(GpuContext& context, const SDL_GPUShaderCreateInfo& createInfo) {
-		return GpuShader::create(context, SDL_CreateGPUShader, &createInfo);
+	inline GpuShader createShader(SDL_GPUDevice* gpuDevice, const SDL_GPUShaderCreateInfo& createInfo) {
+		return GpuShader::create(gpuDevice, SDL_CreateGPUShader, &createInfo);
 	}
 
-	inline GpuGraphicsPipeline createGraphicsPipeline(GpuContext& context, const SDL_GPUGraphicsPipelineCreateInfo& createInfo) {
-		return GpuGraphicsPipeline::create(context, SDL_CreateGPUGraphicsPipeline, &createInfo);
+	inline GpuGraphicsPipeline createGraphicsPipeline(SDL_GPUDevice* gpuDevice, const SDL_GPUGraphicsPipelineCreateInfo& createInfo) {
+		return GpuGraphicsPipeline::create(gpuDevice, SDL_CreateGPUGraphicsPipeline, &createInfo);
 	}
 
-	inline GpuComputePipeline createComputePipeline(GpuContext& context, const SDL_GPUComputePipelineCreateInfo& createInfo) {
-		return GpuComputePipeline::create(context, SDL_CreateGPUComputePipeline, &createInfo);
+	inline GpuComputePipeline createComputePipeline(SDL_GPUDevice* gpuDevice, const SDL_GPUComputePipelineCreateInfo& createInfo) {
+		return GpuComputePipeline::create(gpuDevice, SDL_CreateGPUComputePipeline, &createInfo);
 	}
 
-	inline GpuTransferBuffer createTransferBuffer(GpuContext& context, const SDL_GPUTransferBufferCreateInfo& createInfo) {
-		return GpuTransferBuffer::create(context, SDL_CreateGPUTransferBuffer, &createInfo);
+	inline GpuTransferBuffer createTransferBuffer(SDL_GPUDevice* gpuDevice, const SDL_GPUTransferBufferCreateInfo& createInfo) {
+		return GpuTransferBuffer::create(gpuDevice, SDL_CreateGPUTransferBuffer, &createInfo);
 	}
 
 }

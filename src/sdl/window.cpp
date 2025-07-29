@@ -16,7 +16,7 @@ namespace sdl {
 
 	namespace {
 
-		void imguiInit(SDL_Window* window, SDL_GPUDevice* device) {
+		void imGuiInit(SDL_Window* window, SDL_GPUDevice* device) {
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
 			auto& io = ImGui::GetIO();
@@ -59,6 +59,25 @@ namespace sdl {
 				}
 			});
 		}
+
+		[[nodiscard]] SDL_GPUDevice* initialize(SDL_Window* window) {
+			int driversNbr = SDL_GetNumGPUDrivers();
+			for (int i = 0; i < driversNbr; ++i) {
+				spdlog::info("[GpuContext] Preferred GPU driver: {}", SDL_GetGPUDriver(i));
+			}
+
+			auto gpuDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, true, nullptr);
+			if (!gpuDevice) {
+				throw SdlException{"[GpuContext] Failed to create GPU device: {}", SDL_GetError()};
+			}
+
+			if (!SDL_ClaimWindowForGPUDevice(gpuDevice, window)) {
+				SDL_DestroyGPUDevice(gpuDevice);
+				throw SdlException{"[GpuContext] Failed to claim window for GPU device: {}", SDL_GetError()};
+			}
+			return gpuDevice;
+		}
+
 	}
 
 	Window::Window() {
@@ -86,7 +105,15 @@ namespace sdl {
 		ImGui_ImplSDL3_Shutdown();
 		ImGui::DestroyContext();
 
-		gpuContext_.shutdown();
+		if (gpuDevice_) {
+			SDL_WaitForGPUIdle(gpuDevice_);
+
+			if (window_) {
+				SDL_ReleaseWindowFromGPUDevice(gpuDevice_, window_);
+			}
+			SDL_DestroyGPUDevice(gpuDevice_);
+		}
+
 		if (window_) {
 			SDL_DestroyWindow(window_);
 			SDL_Quit();
@@ -119,13 +146,9 @@ namespace sdl {
 				flags_
 			);
 		}
-		if (gpuContext_.initialize(window_)) {
-			spdlog::info("[sdl::Window] GPU context initialized");
-		} else {
-			throw sdl::SdlException{"Failed to initialize GPU context"};
-		}
+		gpuDevice_ = initialize(window_);
 
-		if (!SDL_SetGPUSwapchainParameters(gpuContext_.getGpuDevice(), window_, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC)) {
+		if (!SDL_SetGPUSwapchainParameters(gpuDevice_, window_, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC)) {
 			spdlog::warn("[sdl::Window] SDL_SetGPUSwapchainParameters failed: {}", SDL_GetError());
 		}
 
@@ -138,7 +161,7 @@ namespace sdl {
 		quit_ = false;
 		setHitTestCallback(onHitTest_);
 
-		imguiInit(window_, gpuContext_.getGpuDevice());
+		imGuiInit(window_, gpuDevice_);
 		preLoop();
 		spdlog::info("[sdl::Window] Loop starting");
 		runLoop();
@@ -212,7 +235,7 @@ namespace sdl {
 		ImDrawData* drawData = ImGui::GetDrawData();
 		const bool isMinimized = (drawData->DisplaySize.x <= 0.0f || drawData->DisplaySize.y <= 0.0f);
 
-		SDL_GPUCommandBuffer* commandBuffer = SDL_AcquireGPUCommandBuffer(gpuContext_.getGpuDevice());
+		SDL_GPUCommandBuffer* commandBuffer = SDL_AcquireGPUCommandBuffer(gpuDevice_);
 
 		SDL_GPUTexture* swapchainTexture;
 		// Uses of SDL_AcquireGPUSwapchainTexture makes memory ballon! So uses SDL_WaitAndAcquireGPUSwapchainTexture instead.
@@ -322,21 +345,5 @@ namespace sdl {
 			SDL_SetWindowHitTest(window_, nullptr, this);
 		}
 	}
-
-	/*
-	Sprite Window::loadTextureToGpu(const Surface& surface, const SDL_GPUSamplerCreateInfo& samplerCreateInfo) {
-		//Texture texture{}
-
-		//auto& texture = textures_.emplace_back(Texture::createTexture(gpuDevice_, surface, samplerCreateInfo));
-		//return Sprite{texture->getSamplerBinding()};
-		return {};
-	}
-
-	Sprite Window::loadTextureToGpu(const Surface& surface) {
-		//auto& texture = textures_.emplace_back(Texture::createTexture(gpuDevice_, surface));
-		//return Sprite{texture->getSamplerBinding()};
-		return {};
-	}
-	*/
 
 }

@@ -2,10 +2,10 @@
 #define CPPSDL3_SDL_WINDOW_H
 
 #include "color.h"
-#include "gpu/gpucontext.h"
 #include "util.h"
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_gpu.h>
 
 #include <chrono>
 #include <string>
@@ -45,8 +45,8 @@ namespace sdl {
 		// Return the window pointer. Use with care.
 		SDL_Window* getSdlWindow() const noexcept;
 
-		gpu::GpuContext& getGpuContext() noexcept {
-			return gpuContext_;
+		SDL_GPUDevice* getGpuDevice() noexcept {
+			return gpuDevice_;
 		}
 
 		void setPosition(int x, int y);
@@ -95,7 +95,7 @@ namespace sdl {
 		Color clearColor_;
 		std::chrono::nanoseconds sleepingTime_{};
 		bool quit_ = false;
-		gpu::GpuContext gpuContext_;
+		SDL_GPUDevice* gpuDevice_ = nullptr;
 	private:
 		// Is called each frame.
 		void renderFrame(const DeltaTime& deltaTime);

@@ -4,12 +4,10 @@ project(CppSdl3
 		"A C++ Wrapper of SDL3"
 	LANGUAGES
 		CXX
-	VERSION 0.2.0
+	VERSION 0.3.0
 )
 
 set(SOURCES
-	src/sdl/gpu/gpucontext.cpp
-	src/sdl/gpu/gpucontext.h
 	src/sdl/gpu/gpuresource.h
 	src/sdl/gpu/gpuutil.h
 	src/sdl/gpu/gpuutil.cpp

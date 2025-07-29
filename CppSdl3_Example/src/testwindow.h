@@ -33,8 +33,6 @@ private:
 
 	void renderFrame(const sdl::DeltaTime& deltaTime, SDL_GPUTexture* swapchainTexture, SDL_GPUCommandBuffer* commandBuffer) override;
 
-	void destroy();
-
 	void removeGamepad(SDL_JoystickID instanceId);
 
 	std::function<void()> onSpacePressed_ = []() {

@@ -5,7 +5,7 @@
 
 namespace sdl {
 
-	void Shader::load(sdl::gpu::GpuContext& context) {
+	void Shader::load(SDL_GPUDevice* gpuDevice) {
 		SDL_GPUShaderCreateInfo vxCreateInfo{
 			.entrypoint = "main",
 			.stage = SDL_GPU_SHADERSTAGE_VERTEX,
@@ -23,7 +23,7 @@ namespace sdl {
 			.num_uniform_buffers = 0
 		};
 
-		auto driver = SDL_GetGPUDeviceDriver(context.getGpuDevice());
+		auto driver = SDL_GetGPUDeviceDriver(gpuDevice);
 		if (strcmp(driver, "vulkan") == 0) {
 			vxCreateInfo.code_size = ShaderVsSpirvBytes.size();
 			vxCreateInfo.code = ShaderVsSpirvBytes.data();
@@ -43,8 +43,8 @@ namespace sdl {
 		} else {
 			throw sdl::SdlException("[Shader] Unsupported GPU driver for shader loading '{}'", driver);
 		}
-		vertexShader = createShader(context, vxCreateInfo);
-		fragmentShader = createShader(context, pxCreateInfo);
+		vertexShader = gpu::createShader(gpuDevice, vxCreateInfo);
+		fragmentShader = gpu::createShader(gpuDevice, pxCreateInfo);
 	}
 
 	void Shader::pushProjectionMatrix(SDL_GPUCommandBuffer* commandBuffer, const glm::mat4& modelMatrix) {

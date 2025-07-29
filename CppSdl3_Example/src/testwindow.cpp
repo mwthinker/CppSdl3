@@ -277,25 +277,25 @@ void TestWindow::renderFrame(const sdl::DeltaTime& deltaTime, SDL_GPUTexture* sw
 
 void TestWindow::addSurfaceToAtlas(SDL_Surface* surface, int border) {
 	fmt::println("Adding surface to atlas: {}x{}, format: {}", 
-        surface->w, surface->h, SDL_GetPixelFormatName(surface->format));
-	sdl::gpu::blitToTexture(gpuContext_, atlas_, imageAtlas_, surface, border);
+		surface->w, surface->h, SDL_GetPixelFormatName(surface->format));
+	sdl::gpu::blitToTexture(gpuDevice_, atlas_, imageAtlas_, surface, border);
 }
 
 void TestWindow::preLoop() {
-	sampler_ = sdl::gpu::createSampler(gpuContext_, SDL_GPUSamplerCreateInfo{
+	sampler_ = sdl::gpu::createSampler(gpuDevice_, SDL_GPUSamplerCreateInfo{
 		.min_filter = SDL_GPU_FILTER_NEAREST,
 		.mag_filter = SDL_GPU_FILTER_NEAREST,
 		.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
 		.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
 		.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
 		.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
-	});
+		});
 
 	auto surface = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(IMG_Load("tetris.bmp"));
-	texture_ = sdl::gpu::uploadSurface(gpuContext_, surface.get());
+	texture_ = sdl::gpu::uploadSurface(gpuDevice_, surface.get());
 
 	auto transparentSurface = sdl::createSdlSurface(createSurface(600, 600, sdl::color::Transparent));
-	atlas_ = sdl::gpu::uploadSurface(gpuContext_, transparentSurface.get());
+	atlas_ = sdl::gpu::uploadSurface(gpuDevice_, transparentSurface.get());
 
 	sdl::GameController::loadGameControllerMappings("gamecontrollerdb.txt");
 	//setHitTestCallback([](const SDL_Point&) { return SDL_HITTEST_DRAGGABLE; });
@@ -303,12 +303,12 @@ void TestWindow::preLoop() {
 	// --- Setup Rectangle Vertex Data ---
 	addSquare(vertexes_, glm::vec3(-0.5f, -0.5f, 0.0f), 0.2f, sdl::color::Red);
 	addSquareTexture(vertexes_, glm::vec3(0.7f, 0.7f, 0.0f), 0.2f, sdl::color::White);
-	
+
 	// Triangle 1 (bottom-left)
 	vertexes_.push_back({{-0.5f, -0.5f, 0.0f}, {}, sdl::color::Red});
 	vertexes_.push_back({{ 0.5f, -0.5f, 0.0f}, {}, sdl::color::Green});
 	vertexes_.push_back({{-0.5f,  0.5f, 0.0f}, {}, sdl::color::Blue});
-		
+
 	// Triangle 2 (top-right);
 	vertexes_.push_back({{ 0.5f, -0.5f, 0.0f}, {}, sdl::color::Green});
 	vertexes_.push_back({{ 0.5f,  0.5f, 0.0f}, {}, sdl::color::html::Yellow});
@@ -317,24 +317,24 @@ void TestWindow::preLoop() {
 	// To be used with the atlas texture
 	addSquareTexture(vertexes_, glm::vec3(0.0, 0.0f, 0.0f), 1.0f, sdl::color::White);
 
-	auto device = gpuContext_.getGpuDevice();
+	auto device = gpuDevice_;
 
 	SDL_GPUBufferCreateInfo bufferInfo{
 		.usage = SDL_GPU_BUFFERUSAGE_VERTEX,
 		.size = (Uint32) vertexes_.size() * sizeof(sdl::Vertex)
 	};
 
-	myVertexBuffer_ = std::make_unique<sdl::gpu::GpuBuffer>(createBuffer(gpuContext_, bufferInfo));
+	myVertexBuffer_ = std::make_unique<sdl::gpu::GpuBuffer>(sdl::gpu::createBuffer(gpuDevice_, bufferInfo));
 
 	// create the vertex buffer
 	SDL_GPUTransferBufferCreateInfo transferInfo{
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
 		.size = (Uint32) vertexes_.size() * sizeof(sdl::Vertex)
 	};
-	sdl::gpu::GpuTransferBuffer transferBuffer = createTransferBuffer(gpuContext_, transferInfo);
+	sdl::gpu::GpuTransferBuffer transferBuffer = sdl::gpu::createTransferBuffer(gpuDevice_, transferInfo);
 
 	// map the transfer buffer to a pointer
-	mapTransferBuffer(gpuContext_, transferBuffer, vertexes_);
+	mapTransferBuffer(gpuDevice_, transferBuffer, vertexes_);
 
 	// start a copy pass
 	SDL_GPUCommandBuffer* commandBuffer = SDL_AcquireGPUCommandBuffer(device);
@@ -366,7 +366,7 @@ void TestWindow::preLoop() {
 	};
 
 	SDL_GPUColorTargetDescription colorTargetDescription{
-		.format = SDL_GetGPUSwapchainTextureFormat(gpuContext_.getGpuDevice(), getSdlWindow()),
+		.format = SDL_GetGPUSwapchainTextureFormat(gpuDevice_, getSdlWindow()),
 		.blend_state = SDL_GPUColorTargetBlendState{
 			.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA,
 			.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
@@ -375,10 +375,10 @@ void TestWindow::preLoop() {
 			.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
 			.alpha_blend_op = SDL_GPU_BLENDOP_ADD,
 			.enable_blend = true,
-		}
+	}
 	};
 
-	shader_.load(gpuContext_);
+	shader_.load(gpuDevice_);
 
 	// Bind the vertex and fragment shaders to the pipeline
 	SDL_GPUGraphicsPipelineCreateInfo pipelineInfo{
@@ -389,19 +389,18 @@ void TestWindow::preLoop() {
 			.num_vertex_buffers = 1,
 			.vertex_attributes = shader_.attributes.data(),
 			.num_vertex_attributes = (Uint32) shader_.attributes.size()
-		},
+	},
 		.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
 		.target_info = SDL_GPUGraphicsPipelineTargetInfo{
 			.color_target_descriptions = &colorTargetDescription,
 			.num_color_targets = 1,
-		}
+	}
 	};
-	myGraphicsPipeline_ = std::make_unique<sdl::gpu::GpuGraphicsPipeline>(createGraphicsPipeline(gpuContext_, pipelineInfo));
+	myGraphicsPipeline_ = std::make_unique<sdl::gpu::GpuGraphicsPipeline>(sdl::gpu::createGraphicsPipeline(gpuDevice_, pipelineInfo));
 	if (!myGraphicsPipeline_) {
 		spdlog::error("Failed to create graphics pipeline: {}", SDL_GetError());
 		return;
 	}
-
 }
 
 void TestWindow::renderImGui(const sdl::DeltaTime& deltaTime) {

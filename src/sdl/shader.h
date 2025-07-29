@@ -18,7 +18,7 @@ namespace sdl {
 	};
 
 	struct Shader {
-		void load(sdl::gpu::GpuContext& context);
+		void load(SDL_GPUDevice* gpuDevice);
 
 		void pushProjectionMatrix(SDL_GPUCommandBuffer* commandBuffer, const glm::mat4& modelMatrix);
 

@@ -9,7 +9,7 @@
 
 namespace sdl::gpu {
 
-	GpuTexture uploadSurface(GpuContext& context, SDL_Surface* surface) {
+	GpuTexture uploadSurface(SDL_GPUDevice* gpuDevice, SDL_Surface* surface) {
 		auto convertedSurfacePtr = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(nullptr);
 		if (surface->format != SDL_PIXELFORMAT_RGBA32) {
 			convertedSurfacePtr.reset(SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32));
@@ -17,7 +17,7 @@ namespace sdl::gpu {
 		surface = convertedSurfacePtr ? convertedSurfacePtr.get() : surface;
 
 		GpuTransferBuffer transferBuffer = createTransferBuffer(
-			context,
+			gpuDevice,
 			SDL_GPUTransferBufferCreateInfo{
 				.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
 				.size = static_cast<Uint32>(surface->w * surface->h * 4)
@@ -25,7 +25,7 @@ namespace sdl::gpu {
 		);
 
 		mapTransferBuffer(
-			context,
+			gpuDevice,
 			transferBuffer,
 			std::span{(Uint8*)surface->pixels, static_cast<size_t>(surface->w * surface->h * 4)},
 			false
@@ -40,9 +40,9 @@ namespace sdl::gpu {
 			.layer_count_or_depth = 1,
 			.num_levels = 1,
 		};
-		auto texture = createTexture(context, textureInfo);
+		auto texture = createTexture(gpuDevice, textureInfo);
 
-		SDL_GPUCommandBuffer* uploadCmdBuf = SDL_AcquireGPUCommandBuffer(context.getGpuDevice());
+		SDL_GPUCommandBuffer* uploadCmdBuf = SDL_AcquireGPUCommandBuffer(gpuDevice);
 		if (!uploadCmdBuf) {
 			throw sdl::SdlException("Failed to acquire command buffer");
 		}
@@ -75,7 +75,7 @@ namespace sdl::gpu {
 		return texture;
 	}
 
-	SDL_Rect blitToTexture(GpuContext& context, GpuTexture& texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border) {
+	SDL_Rect blitToTexture(SDL_GPUDevice* gpuDevice, GpuTexture& texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border) {
 		auto convertedSurfacePtr = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(nullptr);
 		if (surface->format != SDL_PIXELFORMAT_RGBA32) {
 			convertedSurfacePtr.reset(SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32));
@@ -89,7 +89,7 @@ namespace sdl::gpu {
 		auto rect = *rectOptional;
 
 		GpuTransferBuffer transferBuffer = createTransferBuffer(
-			context,
+			gpuDevice,
 			SDL_GPUTransferBufferCreateInfo{
 				.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
 				.size = static_cast<Uint32>(surface->w * surface->h * 4)
@@ -97,13 +97,13 @@ namespace sdl::gpu {
 		);
 
 		mapTransferBuffer(
-			context,
+			gpuDevice,
 			transferBuffer,
 			std::span{(Uint8*)surface->pixels, static_cast<size_t>(surface->w * surface->h * 4)},
 			false
 		);
 
-		SDL_GPUCommandBuffer* uploadCmdBuf = SDL_AcquireGPUCommandBuffer(context.getGpuDevice());
+		SDL_GPUCommandBuffer* uploadCmdBuf = SDL_AcquireGPUCommandBuffer(gpuDevice);
 		if (!uploadCmdBuf) {
 			throw sdl::SdlException("Failed to acquire command buffer");
 		}
