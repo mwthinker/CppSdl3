@@ -76,12 +76,12 @@ namespace sdl {
 
 			auto gpuDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, true, preferredDriver);
 			if (!gpuDevice) {
-				throw SdlException{"[GpuContext] Failed to create GPU device: {}", SDL_GetError()};
+				throw SdlException{"[GpuContext] Failed to create GPU device"};
 			}
 
 			if (!SDL_ClaimWindowForGPUDevice(gpuDevice, window)) {
 				SDL_DestroyGPUDevice(gpuDevice);
-				throw SdlException{"[GpuContext] Failed to claim window for GPU device: {}", SDL_GetError()};
+				throw SdlException{"[GpuContext] Failed to claim window for GPU device"};
 			}
 
 			spdlog::info("[GpuContext] GPU driver used: {}", SDL_GetGPUDeviceDriver(gpuDevice));
