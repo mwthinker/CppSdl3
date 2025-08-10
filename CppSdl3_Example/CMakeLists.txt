@@ -43,5 +43,5 @@ set_target_properties(CppSdl3_Example
 		CXX_STANDARD_REQUIRED YES
 		CXX_EXTENSIONS NO
 )
-	
+
 file(COPY data/. DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

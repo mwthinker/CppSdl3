@@ -34,6 +34,7 @@ set(SOURCES
 	vcpkg.json
 	CMakePresets.json
 	cppsdl3.natstepfilter
+	cppsdl3.natvis
 )
 add_library(CppSdl3 STATIC
 	${SOURCES}
