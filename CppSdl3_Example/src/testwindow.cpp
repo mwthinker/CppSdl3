@@ -9,24 +9,24 @@ namespace {
 
 	void addSquare(std::vector<sdl::Vertex>& vertices, glm::vec3 position, float size, sdl::Color color) {
 		// Bottom-left triangle
-		vertices.push_back({position + glm::vec3(-size, -size, 0.0f), {}, color});
-		vertices.push_back({position + glm::vec3(size, -size, 0.0f), {}, color});
-		vertices.push_back({position + glm::vec3(-size, size, 0.0f), {}, color});
+		vertices.push_back({position + glm::vec3{-size, -size, 0.0f}, {}, color});
+		vertices.push_back({position + glm::vec3{size, -size, 0.0f}, {}, color});
+		vertices.push_back({position + glm::vec3{-size, size, 0.0f}, {}, color});
 		// Top-right triangle
-		vertices.push_back({position + glm::vec3(size, -size, 0.0f), {}, color});
-		vertices.push_back({position + glm::vec3(size, size, 0.0f), {}, color});
-		vertices.push_back({position + glm::vec3(-size, size, 0.0f), {}, color});
+		vertices.push_back({position + glm::vec3{size, -size, 0.0f}, {}, color});
+		vertices.push_back({position + glm::vec3{size, size, 0.0f}, {}, color});
+		vertices.push_back({position + glm::vec3{-size, size, 0.0f}, {}, color});
 	}
 
 	void addSquareTexture(std::vector<sdl::Vertex>& vertices, glm::vec3 position, float size, sdl::Color color) {
 		// Bottom-left triangle
-		vertices.push_back({position + glm::vec3(-size, -size, 0.0f), {0.f, 0.f}, color});
-		vertices.push_back({position + glm::vec3(size, -size, 0.0f), {1.f, 0.f}, color});
-		vertices.push_back({position + glm::vec3(-size, size, 0.0f), {0.f, 1.f}, color});
+		vertices.push_back({position + glm::vec3{-size, -size, 0.0f}, {0.f, 0.f}, color});
+		vertices.push_back({position + glm::vec3{size, -size, 0.0f}, {1.f, 0.f}, color});
+		vertices.push_back({position + glm::vec3{-size, size, 0.0f}, {0.f, 1.f}, color});
 		// Top-right triangle
-		vertices.push_back({position + glm::vec3(size, -size, 0.0f), {1.f, 0.f}, color});
-		vertices.push_back({position + glm::vec3(size, size, 0.0f), {1.f, 1.f}, color});
-		vertices.push_back({position + glm::vec3(-size, size, 0.0f), {0.f, 1.f}, color});
+		vertices.push_back({position + glm::vec3{size, -size, 0.0f}, {1.f, 0.f}, color});
+		vertices.push_back({position + glm::vec3{size, size, 0.0f}, {1.f, 1.f}, color});
+		vertices.push_back({position + glm::vec3{-size, size, 0.0f}, {0.f, 1.f}, color});
 	}
 
 	void printGameControllerButton(Uint8 button) {
@@ -301,21 +301,21 @@ void TestWindow::preLoop() {
 	//setHitTestCallback([](const SDL_Point&) { return SDL_HITTEST_DRAGGABLE; });
 
 	// --- Setup Rectangle Vertex Data ---
-	addSquare(vertexes_, glm::vec3(-0.5f, -0.5f, 0.0f), 0.2f, sdl::color::Red);
-	addSquareTexture(vertexes_, glm::vec3(0.7f, 0.7f, 0.0f), 0.2f, sdl::color::White);
+	addSquare(vertexes_, glm::vec3{-0.5f, -0.5f, 0.0f}, 0.2f, sdl::color::Red);
+	addSquareTexture(vertexes_, glm::vec3{0.7f, 0.7f, 0.0f}, 0.2f, sdl::color::White);
 
 	// Triangle 1 (bottom-left)
 	vertexes_.push_back({{-0.5f, -0.5f, 0.0f}, {}, sdl::color::Red});
-	vertexes_.push_back({{ 0.5f, -0.5f, 0.0f}, {}, sdl::color::Green});
-	vertexes_.push_back({{-0.5f,  0.5f, 0.0f}, {}, sdl::color::Blue});
+	vertexes_.push_back({{0.5f, -0.5f, 0.0f}, {}, sdl::color::Green});
+	vertexes_.push_back({{-0.5f, 0.5f, 0.0f}, {}, sdl::color::Blue});
 
 	// Triangle 2 (top-right);
-	vertexes_.push_back({{ 0.5f, -0.5f, 0.0f}, {}, sdl::color::Green});
-	vertexes_.push_back({{ 0.5f,  0.5f, 0.0f}, {}, sdl::color::html::Yellow});
-	vertexes_.push_back({{-0.5f,  0.5f, 0.0f}, {}, sdl::color::Blue});
+	vertexes_.push_back({{0.5f, -0.5f, 0.0f}, {}, sdl::color::Green});
+	vertexes_.push_back({{0.5f, 0.5f, 0.0f}, {}, sdl::color::html::Yellow});
+	vertexes_.push_back({{-0.5f, 0.5f, 0.0f}, {}, sdl::color::Blue});
 
 	// To be used with the atlas texture
-	addSquareTexture(vertexes_, glm::vec3(0.0, 0.0f, 0.0f), 1.0f, sdl::color::White);
+	addSquareTexture(vertexes_, glm::vec3{0.0f, 0.0f, 0.0f}, 1.0f, sdl::color::White);
 
 	auto device = gpuDevice_;
 
