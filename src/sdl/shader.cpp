@@ -47,9 +47,9 @@ namespace sdl {
 		fragmentShader = gpu::createShader(gpuDevice, pxCreateInfo);
 	}
 
-	void Shader::pushProjectionMatrix(SDL_GPUCommandBuffer* commandBuffer, const glm::mat4& modelMatrix) {
+	void Shader::uploadProjectionMatrix(SDL_GPUCommandBuffer* commandBuffer, const glm::mat4& projection) {
 		// Maps to b0 in fragment shader
-		SDL_PushGPUVertexUniformData(commandBuffer, 0, &modelMatrix, sizeof(modelMatrix));
+		SDL_PushGPUVertexUniformData(commandBuffer, 0, &projection, sizeof(projection));
 	}
 
 }

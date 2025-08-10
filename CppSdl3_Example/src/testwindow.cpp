@@ -219,12 +219,12 @@ void TestWindow::renderFrame(const sdl::DeltaTime& deltaTime, SDL_GPUTexture* sw
 	SDL_GPURenderPass* renderPass = SDL_BeginGPURenderPass(commandBuffer, &targetInfo, 1, nullptr);
 
 	SDL_GPUBufferBinding binding = {
-		.buffer = myVertexBuffer_->get(),
+		.buffer = myVertexBuffer_.get(),
 		.offset = 0
 	};
 
-	glm::mat4 modelMatrix{1};
-	shader_.pushProjectionMatrix(commandBuffer, modelMatrix);
+	glm::mat4 projection{1};
+	shader_.uploadProjectionMatrix(commandBuffer, projection);
 		
 	SDL_BindGPUVertexBuffers(
 		renderPass, 
@@ -232,7 +232,7 @@ void TestWindow::renderFrame(const sdl::DeltaTime& deltaTime, SDL_GPUTexture* sw
 		&binding,
 		1
 	);
-	SDL_BindGPUGraphicsPipeline(renderPass, myGraphicsPipeline_->get());
+	SDL_BindGPUGraphicsPipeline(renderPass, myGraphicsPipeline_.get());
 	
 	// Draw the first trianges with the first texture
 	SDL_GPUTextureSamplerBinding samplerBinding{
@@ -289,7 +289,7 @@ void TestWindow::preLoop() {
 		.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
 		.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
 		.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
-		});
+	});
 
 	auto surface = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(IMG_Load("tetris.bmp"));
 	texture_ = sdl::gpu::uploadSurface(gpuDevice_, surface.get());
@@ -324,7 +324,7 @@ void TestWindow::preLoop() {
 		.size = (Uint32) vertexes_.size() * sizeof(sdl::Vertex)
 	};
 
-	myVertexBuffer_ = std::make_unique<sdl::gpu::GpuBuffer>(sdl::gpu::createBuffer(gpuDevice_, bufferInfo));
+	myVertexBuffer_ = sdl::gpu::createBuffer(gpuDevice_, bufferInfo);
 
 	// create the vertex buffer
 	SDL_GPUTransferBufferCreateInfo transferInfo{
@@ -347,7 +347,7 @@ void TestWindow::preLoop() {
 
 		// where to upload the data
 		SDL_GPUBufferRegion region{
-			.buffer = myVertexBuffer_->get(),
+			.buffer = myVertexBuffer_.get(),
 			.size = (Uint32) vertexes_.size() * sizeof(sdl::Vertex)
 		};
 
@@ -396,7 +396,7 @@ void TestWindow::preLoop() {
 			.num_color_targets = 1,
 	}
 	};
-	myGraphicsPipeline_ = std::make_unique<sdl::gpu::GpuGraphicsPipeline>(sdl::gpu::createGraphicsPipeline(gpuDevice_, pipelineInfo));
+	myGraphicsPipeline_ = sdl::gpu::createGraphicsPipeline(gpuDevice_, pipelineInfo);
 	if (!myGraphicsPipeline_) {
 		spdlog::error("Failed to create graphics pipeline: {}", SDL_GetError());
 		return;

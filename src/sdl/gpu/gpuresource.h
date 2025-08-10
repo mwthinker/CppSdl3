@@ -11,106 +11,85 @@
 
 namespace sdl::gpu {
 
-	/// @brief RAII wrapper for GPU resources in SDL. 
-	/// Important! Must destruct/reset the resource before SDL_GPUDevice* is destroyed!
-	/// @tparam Resource
-	/// @tparam ReleaseFunc 
+	/// @brief Custom deleter for GPU resources that requires SDL_GPUDevice for cleanup
+	/// @tparam Resource The GPU resource type
+	/// @tparam ReleaseFunc The SDL release function
 	template <typename Resource, auto ReleaseFunc>
-	class GpuResource {
-	public:
-		GpuResource() = default;
-		GpuResource(const GpuResource&) = delete;
-		GpuResource& operator=(const GpuResource&) = delete;
-
-		GpuResource(GpuResource&& other) noexcept
-			: resource_(std::exchange(other.resource_, nullptr))
-			, gpuDevice_(std::exchange(other.gpuDevice_, nullptr)) {
-		}
-
-		GpuResource& operator=(GpuResource&& other) noexcept {
-			reset();
-
-			resource_ = std::exchange(other.resource_, nullptr);
-			gpuDevice_ = std::exchange(other.gpuDevice_, nullptr);
-			return *this;
-		}
-
-		~GpuResource() {
-			if (resource_ && gpuDevice_) {
-				ReleaseFunc(gpuDevice_, resource_);
-			} else if (resource_ && !gpuDevice_) {
-				spdlog::warn("[GpuResource] Resource destroyed without an associated GpuContext! Potential leak!");
-			}
-		}
-
-		Resource* get() const noexcept {
-			return resource_;
-		}
-
-		bool isValid() const noexcept {
-			return resource_ != nullptr;
-		}
-
-		template<typename CreateFunc, typename... Args>
-		static GpuResource<Resource, ReleaseFunc> create(SDL_GPUDevice* gpuDevice, CreateFunc createFunc, Args&&... args) {
-			GpuResource<Resource, ReleaseFunc> resource;
-			resource.gpuDevice_ = gpuDevice;
-			resource.resource_ = createFunc(gpuDevice, std::forward<Args>(args)...);
-			if (!resource.resource_) {
-				throw sdl::SdlException("Failed to create GPU resource");
-			}
-			return resource;
-		}
-
-		void reset() {
-			if (resource_ && gpuDevice_) {
-				ReleaseFunc(gpuDevice_, resource_);
-				resource_ = nullptr;
-				gpuDevice_ = nullptr;
-			} else if (resource_) {
-				spdlog::warn("[GpuResource] Resource released without an associated GpuContext! Potential leak!");
-			}
-		}
-
-	private:
-		Resource* resource_ = nullptr;
+	struct GpuResourceDeleter {
 		SDL_GPUDevice* gpuDevice_ = nullptr;
+
+		GpuResourceDeleter() noexcept = default;
+
+		explicit GpuResourceDeleter(SDL_GPUDevice* gpuDevice) noexcept 
+			: gpuDevice_{gpuDevice} {
+		}
+
+		void operator()(Resource* resource) const noexcept {
+			if (resource && gpuDevice_) {
+				ReleaseFunc(gpuDevice_, resource);
+			} else if (resource && !gpuDevice_) {
+				spdlog::warn("[GpuResource] Resource destroyed without an associated GpuDevice! Potential leak!");
+			}
+		}
 	};
 
-	using GpuSampler = GpuResource<SDL_GPUSampler, SDL_ReleaseGPUSampler>;
-	using GpuTexture = GpuResource<SDL_GPUTexture, SDL_ReleaseGPUTexture>;
-	using GpuBuffer = GpuResource<SDL_GPUBuffer, SDL_ReleaseGPUBuffer>;
-	using GpuShader = GpuResource<SDL_GPUShader, SDL_ReleaseGPUShader>;
-	using GpuGraphicsPipeline = GpuResource<SDL_GPUGraphicsPipeline, SDL_ReleaseGPUGraphicsPipeline>;
-	using GpuComputePipeline = GpuResource<SDL_GPUComputePipeline, SDL_ReleaseGPUComputePipeline>;
-	using GpuTransferBuffer = GpuResource<SDL_GPUTransferBuffer, SDL_ReleaseGPUTransferBuffer>;
+	// Type aliases for GPU resources using unique_ptr with custom deleters
+	using GpuSampler = std::unique_ptr<SDL_GPUSampler, GpuResourceDeleter<SDL_GPUSampler, SDL_ReleaseGPUSampler>>;
+	using GpuTexture = std::unique_ptr<SDL_GPUTexture, GpuResourceDeleter<SDL_GPUTexture, SDL_ReleaseGPUTexture>>;
+	using GpuBuffer = std::unique_ptr<SDL_GPUBuffer, GpuResourceDeleter<SDL_GPUBuffer, SDL_ReleaseGPUBuffer>>;
+	using GpuShader = std::unique_ptr<SDL_GPUShader, GpuResourceDeleter<SDL_GPUShader, SDL_ReleaseGPUShader>>;
+	using GpuGraphicsPipeline = std::unique_ptr<SDL_GPUGraphicsPipeline, GpuResourceDeleter<SDL_GPUGraphicsPipeline, SDL_ReleaseGPUGraphicsPipeline>>;
+	using GpuComputePipeline = std::unique_ptr<SDL_GPUComputePipeline, GpuResourceDeleter<SDL_GPUComputePipeline, SDL_ReleaseGPUComputePipeline>>;
+	using GpuTransferBuffer = std::unique_ptr<SDL_GPUTransferBuffer, GpuResourceDeleter<SDL_GPUTransferBuffer, SDL_ReleaseGPUTransferBuffer>>;
+
+	/// @brief Creates a GPU resource wrapped in unique_ptr with proper cleanup
+	/// @tparam Resource The GPU resource type
+	/// @tparam ReleaseFunc The SDL release function  
+	/// @tparam CreateFunc The SDL create function type
+	/// @tparam Args Variadic template for create function arguments
+	/// @param gpuDevice The GPU device used for creation and cleanup
+	/// @param createFunc The SDL create function
+	/// @param arg Argument to pass to the create function
+	/// @return unique_ptr managing the GPU resource
+	template<typename Resource, auto ReleaseFunc, typename CreateFunc, typename Arg>
+	auto createGpuResource(SDL_GPUDevice* gpuDevice, CreateFunc createFunc, Arg&& arg) {
+		using DeleterType = GpuResourceDeleter<Resource, ReleaseFunc>;
+		using ResourceUniquePtr = std::unique_ptr<Resource, DeleterType>;
+
+		Resource* resource = createFunc(gpuDevice, std::forward<Arg>(arg));
+		if (!resource) {
+			throw sdl::SdlException("Failed to create GPU resource");
+		}
+
+		return ResourceUniquePtr{resource, DeleterType{gpuDevice}};
+	}
 
 	inline GpuSampler createSampler(SDL_GPUDevice* gpuDevice, const SDL_GPUSamplerCreateInfo& createInfo) {
-		return GpuSampler::create(gpuDevice, SDL_CreateGPUSampler, &createInfo);
+		return createGpuResource<SDL_GPUSampler, SDL_ReleaseGPUSampler>(gpuDevice, SDL_CreateGPUSampler, &createInfo);
 	}
 
 	inline GpuTexture createTexture(SDL_GPUDevice* gpuDevice, const SDL_GPUTextureCreateInfo& createInfo) {
-		return GpuTexture::create(gpuDevice, SDL_CreateGPUTexture, &createInfo);
+		return createGpuResource<SDL_GPUTexture, SDL_ReleaseGPUTexture>(gpuDevice, SDL_CreateGPUTexture, &createInfo);
 	}
 
 	inline GpuBuffer createBuffer(SDL_GPUDevice* gpuDevice, const SDL_GPUBufferCreateInfo& createInfo) {
-		return GpuBuffer::create(gpuDevice, SDL_CreateGPUBuffer, &createInfo);
+		return createGpuResource<SDL_GPUBuffer, SDL_ReleaseGPUBuffer>(gpuDevice, SDL_CreateGPUBuffer, &createInfo);
 	}
 
 	inline GpuShader createShader(SDL_GPUDevice* gpuDevice, const SDL_GPUShaderCreateInfo& createInfo) {
-		return GpuShader::create(gpuDevice, SDL_CreateGPUShader, &createInfo);
+		return createGpuResource<SDL_GPUShader, SDL_ReleaseGPUShader>(gpuDevice, SDL_CreateGPUShader, &createInfo);
 	}
 
 	inline GpuGraphicsPipeline createGraphicsPipeline(SDL_GPUDevice* gpuDevice, const SDL_GPUGraphicsPipelineCreateInfo& createInfo) {
-		return GpuGraphicsPipeline::create(gpuDevice, SDL_CreateGPUGraphicsPipeline, &createInfo);
+		return createGpuResource<SDL_GPUGraphicsPipeline, SDL_ReleaseGPUGraphicsPipeline>(gpuDevice, SDL_CreateGPUGraphicsPipeline, &createInfo);
 	}
 
 	inline GpuComputePipeline createComputePipeline(SDL_GPUDevice* gpuDevice, const SDL_GPUComputePipelineCreateInfo& createInfo) {
-		return GpuComputePipeline::create(gpuDevice, SDL_CreateGPUComputePipeline, &createInfo);
+		return createGpuResource<SDL_GPUComputePipeline, SDL_ReleaseGPUComputePipeline>(gpuDevice, SDL_CreateGPUComputePipeline, &createInfo);
 	}
 
 	inline GpuTransferBuffer createTransferBuffer(SDL_GPUDevice* gpuDevice, const SDL_GPUTransferBufferCreateInfo& createInfo) {
-		return GpuTransferBuffer::create(gpuDevice, SDL_CreateGPUTransferBuffer, &createInfo);
+		return createGpuResource<SDL_GPUTransferBuffer, SDL_ReleaseGPUTransferBuffer>(gpuDevice, SDL_CreateGPUTransferBuffer, &createInfo);
 	}
 
 }

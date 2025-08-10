@@ -11,10 +11,26 @@
 #include <span>
 #include <ranges>
 
-/// \brief Compatible with UBO (Uniform Buffer Object) that requires std140 layout
+namespace sdl::gpu {
+
+	template<typename T>
+	concept VertexType = 
+		std::is_standard_layout_v<T> &&
+		std::is_trivially_copyable_v<T> &&
+		alignof(T) == 16 &&
+		std::is_class_v<T> && !std::is_reference_v<T>;
+
+	/// \brief Compatible with UBO (Uniform Buffer Object) that requires std140 layout
 #define VERTEX(name) struct alignas(16) name
 
-namespace sdl::gpu {
+	// Separate macro for validation that you use AFTER defining the struct
+#define VERTEX_VALIDATE(name) \
+	static_assert(sdl::gpu::VertexType<name>, "VERTEX(" #name ") does not satisfy VertexType requirements")
+
+	template<typename Type>
+	consteval void checkVertexType() {
+		static_assert(sdl::gpu::VertexType<Type>, "Vertex must be compatible with UBO (Uniform Buffer Object) that requires std140 layout");
+	}
 
 	void copyPass(SDL_GPUCommandBuffer* commandBuffer, std::invocable<SDL_GPUCopyPass*> auto&& t) {
 		SDL_GPUCopyPass* copyPass = SDL_BeginGPUCopyPass(commandBuffer);

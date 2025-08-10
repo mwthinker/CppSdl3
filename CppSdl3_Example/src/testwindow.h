@@ -41,8 +41,8 @@ private:
 	int controllerEvent_ = 0;
 	std::vector<sdl::GameController> gameControllers_;
 
-	std::unique_ptr<sdl::gpu::GpuBuffer> myVertexBuffer_;
-	std::unique_ptr<sdl::gpu::GpuGraphicsPipeline> myGraphicsPipeline_;
+	sdl::gpu::GpuBuffer myVertexBuffer_;
+	sdl::gpu::GpuGraphicsPipeline myGraphicsPipeline_;
 	sdl::gpu::GpuSampler sampler_;
 	sdl::gpu::GpuTexture texture_;
 	std::vector<sdl::Vertex> vertexes_;

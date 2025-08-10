@@ -16,11 +16,12 @@ namespace sdl {
 		glm::vec2 tex;
 		glm::vec4 color;
 	};
+	VERTEX_VALIDATE(Vertex);
 
 	struct Shader {
 		void load(SDL_GPUDevice* gpuDevice);
 
-		void pushProjectionMatrix(SDL_GPUCommandBuffer* commandBuffer, const glm::mat4& modelMatrix);
+		static void uploadProjectionMatrix(SDL_GPUCommandBuffer* commandBuffer, const glm::mat4& projection);
 
 		static constexpr std::array<SDL_GPUVertexAttribute, 3> attributes = {
 			// position maps to TEXCOORD0
