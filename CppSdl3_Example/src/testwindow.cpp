@@ -2,6 +2,7 @@
 
 #include <spdlog/spdlog.h>
 #include <fmt/core.h>
+#include <sdl/gpu/gpuutil.h>
 
 #include <SDL3_image/SDL_image.h>
 

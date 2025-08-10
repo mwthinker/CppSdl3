@@ -8,7 +8,6 @@ project(CppSdl3
 )
 
 set(SOURCES
-	src/sdl/gpu/gpuresource.h
 	src/sdl/gpu/gpuutil.h
 	src/sdl/gpu/gpuutil.cpp
 	src/sdl/gpu/sdlgpu.h
