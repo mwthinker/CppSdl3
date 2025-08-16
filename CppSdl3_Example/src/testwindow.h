@@ -47,7 +47,6 @@ private:
 	sdl::gpu::GpuTexture texture_;
 	std::vector<sdl::Vertex> vertexes_;
 	sdl::gpu::GpuTexture atlas_;
-	SDL_GPUTextureSamplerBinding textureSamplerBinding_;
 
 	sdl::Shader shader_;
 	sdl::ImageAtlas imageAtlas_{600, 600};

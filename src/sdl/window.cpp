@@ -248,7 +248,6 @@ namespace sdl {
 		SDL_GPUCommandBuffer* commandBuffer = SDL_AcquireGPUCommandBuffer(gpuDevice_);
 
 		SDL_GPUTexture* swapchainTexture;
-		// Uses of SDL_AcquireGPUSwapchainTexture makes memory ballon! So uses SDL_WaitAndAcquireGPUSwapchainTexture instead.
 		SDL_WaitAndAcquireGPUSwapchainTexture(commandBuffer, window_, &swapchainTexture, nullptr, nullptr);
 		
 		if (swapchainTexture != nullptr && !isMinimized) {
