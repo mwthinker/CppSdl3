@@ -4,7 +4,7 @@ project(CppSdl3
 		"A C++ Wrapper of SDL3"
 	LANGUAGES
 		CXX
-	VERSION 0.5.0
+	VERSION 0.6.0
 )
 
 set(SOURCES
