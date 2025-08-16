@@ -43,8 +43,8 @@ namespace sdl {
 		} else {
 			throw sdl::SdlException("[Shader] Unsupported GPU driver for shader loading '{}'", driver);
 		}
-		vertexShader = gpu::createShader(gpuDevice, vxCreateInfo);
-		fragmentShader = gpu::createShader(gpuDevice, pxCreateInfo);
+		vertexShader = createGpuShader(gpuDevice, vxCreateInfo);
+		fragmentShader = createGpuShader(gpuDevice, pxCreateInfo);
 	}
 
 	void Shader::uploadProjectionMatrix(SDL_GPUCommandBuffer* commandBuffer, const glm::mat4& projection) {

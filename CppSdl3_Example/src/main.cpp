@@ -20,12 +20,12 @@ void testPrintColors() {
 }
 
 void testImGuiWindow() {
-	auto red = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(createSurface(200, 100, Red));
-	auto green = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(createSurface(100, 200, Green));
-	auto blue = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(createSurface(200, 200, Blue));
-	auto white = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(createSurface(30, 30, White));
-	auto tetris = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(IMG_Load("tetris.bmp"));
-	auto cross = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(IMG_Load("cross.png"));
+	auto red = createSdlSurface(200, 100, Red);
+	auto green = createSdlSurface(100, 200, Green);
+	auto blue = createSdlSurface(200, 200, Blue);
+	auto white = createSdlSurface(30, 30, White);
+	auto tetris = createSdlSurface("tetris.bmp");
+	auto cross = createSdlSurface("cross.png");
 
 	spdlog::info("[testLoadTextureAtlas2] Error {}", SDL_GetError());
 	static auto htmlColors = html::getHtmlColors();
@@ -54,7 +54,7 @@ void testImGuiWindow() {
 			default:
 				if (++index < static_cast<int>(htmlColors.size())) {
 					auto html = htmlColors[index];
-					auto colorSurface = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(createSurface(30, 30, html.color));
+					auto colorSurface = createSdlSurface(30, 30, html.color);
 					w.addSurfaceToAtlas(colorSurface.get(), 1);
 					spdlog::info("[testLoadTextureAtlas2] Color added {} = {} ", html.name, html.color.toHexString());
 				} else {

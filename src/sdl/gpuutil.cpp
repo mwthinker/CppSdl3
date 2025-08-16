@@ -7,7 +7,7 @@
 
 #include <stdexcept>
 
-namespace sdl::gpu {
+namespace sdl {
 
 	GpuTexture uploadSurface(SDL_GPUDevice* gpuDevice, SDL_Surface* surface) {
 		auto convertedSurfacePtr = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(nullptr);
@@ -16,7 +16,7 @@ namespace sdl::gpu {
 		}
 		surface = convertedSurfacePtr ? convertedSurfacePtr.get() : surface;
 
-		GpuTransferBuffer transferBuffer = createTransferBuffer(
+		GpuTransferBuffer transferBuffer = createGpuTransferBuffer(
 			gpuDevice,
 			SDL_GPUTransferBufferCreateInfo{
 				.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
@@ -40,14 +40,14 @@ namespace sdl::gpu {
 			.layer_count_or_depth = 1,
 			.num_levels = 1,
 		};
-		auto texture = createTexture(gpuDevice, textureInfo);
+		auto texture = createGpuTexture(gpuDevice, textureInfo);
 
 		SDL_GPUCommandBuffer* uploadCmdBuf = SDL_AcquireGPUCommandBuffer(gpuDevice);
 		if (!uploadCmdBuf) {
 			throw sdl::SdlException("Failed to acquire command buffer");
 		}
 
-		sdl::gpu::copyPass(uploadCmdBuf, [&](SDL_GPUCopyPass* copyPass) {
+		sdl::copyPass(uploadCmdBuf, [&](SDL_GPUCopyPass* copyPass) {
 			SDL_GPUTextureTransferInfo transferInfo{
 				.transfer_buffer = transferBuffer.get(),
 				.offset = 0,
@@ -88,7 +88,7 @@ namespace sdl::gpu {
 		}
 		auto rect = *rectOptional;
 
-		GpuTransferBuffer transferBuffer = createTransferBuffer(
+		GpuTransferBuffer transferBuffer = createGpuTransferBuffer(
 			gpuDevice,
 			SDL_GPUTransferBufferCreateInfo{
 				.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
@@ -108,7 +108,7 @@ namespace sdl::gpu {
 			throw sdl::SdlException("Failed to acquire command buffer");
 		}
 
-		sdl::gpu::copyPass(uploadCmdBuf, [&](SDL_GPUCopyPass* copyPass) {
+		sdl::copyPass(uploadCmdBuf, [&](SDL_GPUCopyPass* copyPass) {
 			SDL_GPUTextureTransferInfo transferInfo{
 				.transfer_buffer = transferBuffer.get(),
 				.offset = 0,

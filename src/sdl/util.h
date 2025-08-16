@@ -37,6 +37,9 @@ namespace sdl {
 	/// @return A unique pointer to the SDL resource.
 	template <typename T, void(*DestroyFn)(T*)>
 	SdlUniquePtr<T, DestroyFn> makeSdlUnique(T* ptr) {
+		if (!ptr) {
+			throw std::runtime_error{"Not allowed to create SdlUniquePtr with a null pointer."};
+		}
 		return SdlUniquePtr<T, DestroyFn>{ptr};
 	}
 

@@ -85,10 +85,18 @@ namespace {
 
 }
 
-SDL_Surface* createSurface(int w, int h, sdl::Color color) {
+sdl::SdlSurface createSdlSurface(int w, int h, sdl::Color color) {
 	auto s = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA32);
 	SDL_FillSurfaceRect(s, nullptr, color.toImU32());
-	return s;
+	return sdl::createSdlSurface(s);
+}
+
+sdl::SdlSurface createSdlSurface(const std::string& fileName) {
+	auto s = IMG_Load(fileName.c_str());
+	if (!s) {
+		throw sdl::SdlException{"Failed to load surface from file '{}'", fileName};
+	}
+	return sdl::createSdlSurface(s);
 }
 
 TestWindow::TestWindow() {
@@ -279,11 +287,11 @@ void TestWindow::renderFrame(const sdl::DeltaTime& deltaTime, SDL_GPUTexture* sw
 void TestWindow::addSurfaceToAtlas(SDL_Surface* surface, int border) {
 	fmt::println("Adding surface to atlas: {}x{}, format: {}", 
 		surface->w, surface->h, SDL_GetPixelFormatName(surface->format));
-	sdl::gpu::blitToTexture(gpuDevice_, atlas_.get(), imageAtlas_, surface, border);
+	sdl::blitToTexture(gpuDevice_, atlas_.get(), imageAtlas_, surface, border);
 }
 
 void TestWindow::preLoop() {
-	sampler_ = sdl::gpu::createSampler(gpuDevice_, SDL_GPUSamplerCreateInfo{
+	sampler_ = sdl::createGpuSampler(gpuDevice_, SDL_GPUSamplerCreateInfo{
 		.min_filter = SDL_GPU_FILTER_NEAREST,
 		.mag_filter = SDL_GPU_FILTER_NEAREST,
 		.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
@@ -293,10 +301,10 @@ void TestWindow::preLoop() {
 	});
 
 	auto surface = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(IMG_Load("tetris.bmp"));
-	texture_ = sdl::gpu::uploadSurface(gpuDevice_, surface.get());
+	texture_ = sdl::uploadSurface(gpuDevice_, surface.get());
 
-	auto transparentSurface = sdl::createSdlSurface(createSurface(600, 600, sdl::color::Transparent));
-	atlas_ = sdl::gpu::uploadSurface(gpuDevice_, transparentSurface.get());
+	auto transparentSurface = createSdlSurface(600, 600, sdl::color::Transparent);
+	atlas_ = sdl::uploadSurface(gpuDevice_, transparentSurface.get());
 
 	sdl::GameController::loadGameControllerMappings("gamecontrollerdb.txt");
 	//setHitTestCallback([](const SDL_Point&) { return SDL_HITTEST_DRAGGABLE; });
@@ -325,21 +333,21 @@ void TestWindow::preLoop() {
 		.size = (Uint32) vertexes_.size() * sizeof(sdl::Vertex)
 	};
 
-	myVertexBuffer_ = sdl::gpu::createBuffer(gpuDevice_, bufferInfo);
+	myVertexBuffer_ = sdl::createGpuBuffer(gpuDevice_, bufferInfo);
 
 	// create the vertex buffer
 	SDL_GPUTransferBufferCreateInfo transferInfo{
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
 		.size = (Uint32) vertexes_.size() * sizeof(sdl::Vertex)
 	};
-	sdl::gpu::GpuTransferBuffer transferBuffer = sdl::gpu::createTransferBuffer(gpuDevice_, transferInfo);
+	sdl::GpuTransferBuffer transferBuffer = sdl::createGpuTransferBuffer(gpuDevice_, transferInfo);
 
 	// map the transfer buffer to a pointer
-	sdl::gpu::mapTransferBuffer(gpuDevice_, transferBuffer.get(), vertexes_);
+	sdl::mapTransferBuffer(gpuDevice_, transferBuffer.get(), vertexes_);
 
 	// start a copy pass
 	SDL_GPUCommandBuffer* commandBuffer = SDL_AcquireGPUCommandBuffer(device);
-	sdl::gpu::copyPass(commandBuffer, [&](SDL_GPUCopyPass* copyPass) {
+	sdl::copyPass(commandBuffer, [&](SDL_GPUCopyPass* copyPass) {
 		// where is the data
 		SDL_GPUTransferBufferLocation location{
 			.transfer_buffer = transferBuffer.get(),
@@ -397,7 +405,7 @@ void TestWindow::preLoop() {
 			.num_color_targets = 1,
 	}
 	};
-	myGraphicsPipeline_ = sdl::gpu::createGraphicsPipeline(gpuDevice_, pipelineInfo);
+	myGraphicsPipeline_ = sdl::createGpuGraphicsPipeline(gpuDevice_, pipelineInfo);
 	if (!myGraphicsPipeline_) {
 		spdlog::error("Failed to create graphics pipeline: {}", SDL_GetError());
 		return;

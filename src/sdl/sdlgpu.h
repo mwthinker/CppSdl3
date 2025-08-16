@@ -11,7 +11,7 @@
 #include <ranges>
 #include <memory>
 
-namespace sdl::gpu {
+namespace sdl {
 
 	/// @brief Custom deleter for GPU resources that requires SDL_GPUDevice for cleanup
 	/// @tparam Resource The GPU resource type
@@ -66,31 +66,31 @@ namespace sdl::gpu {
 		return ResourceUniquePtr{resource, DeleterType{gpuDevice}};
 	}
 
-	inline GpuSampler createSampler(SDL_GPUDevice* gpuDevice, const SDL_GPUSamplerCreateInfo& createInfo) {
+	inline GpuSampler createGpuSampler(SDL_GPUDevice* gpuDevice, const SDL_GPUSamplerCreateInfo& createInfo) {
 		return createGpuResource<SDL_GPUSampler, SDL_ReleaseGPUSampler>(gpuDevice, SDL_CreateGPUSampler, &createInfo);
 	}
 
-	inline GpuTexture createTexture(SDL_GPUDevice* gpuDevice, const SDL_GPUTextureCreateInfo& createInfo) {
+	inline GpuTexture createGpuTexture(SDL_GPUDevice* gpuDevice, const SDL_GPUTextureCreateInfo& createInfo) {
 		return createGpuResource<SDL_GPUTexture, SDL_ReleaseGPUTexture>(gpuDevice, SDL_CreateGPUTexture, &createInfo);
 	}
 
-	inline GpuBuffer createBuffer(SDL_GPUDevice* gpuDevice, const SDL_GPUBufferCreateInfo& createInfo) {
+	inline GpuBuffer createGpuBuffer(SDL_GPUDevice* gpuDevice, const SDL_GPUBufferCreateInfo& createInfo) {
 		return createGpuResource<SDL_GPUBuffer, SDL_ReleaseGPUBuffer>(gpuDevice, SDL_CreateGPUBuffer, &createInfo);
 	}
 
-	inline GpuShader createShader(SDL_GPUDevice* gpuDevice, const SDL_GPUShaderCreateInfo& createInfo) {
+	inline GpuShader createGpuShader(SDL_GPUDevice* gpuDevice, const SDL_GPUShaderCreateInfo& createInfo) {
 		return createGpuResource<SDL_GPUShader, SDL_ReleaseGPUShader>(gpuDevice, SDL_CreateGPUShader, &createInfo);
 	}
 
-	inline GpuGraphicsPipeline createGraphicsPipeline(SDL_GPUDevice* gpuDevice, const SDL_GPUGraphicsPipelineCreateInfo& createInfo) {
+	inline GpuGraphicsPipeline createGpuGraphicsPipeline(SDL_GPUDevice* gpuDevice, const SDL_GPUGraphicsPipelineCreateInfo& createInfo) {
 		return createGpuResource<SDL_GPUGraphicsPipeline, SDL_ReleaseGPUGraphicsPipeline>(gpuDevice, SDL_CreateGPUGraphicsPipeline, &createInfo);
 	}
 
-	inline GpuComputePipeline createComputePipeline(SDL_GPUDevice* gpuDevice, const SDL_GPUComputePipelineCreateInfo& createInfo) {
+	inline GpuComputePipeline createGpuComputePipeline(SDL_GPUDevice* gpuDevice, const SDL_GPUComputePipelineCreateInfo& createInfo) {
 		return createGpuResource<SDL_GPUComputePipeline, SDL_ReleaseGPUComputePipeline>(gpuDevice, SDL_CreateGPUComputePipeline, &createInfo);
 	}
 
-	inline GpuTransferBuffer createTransferBuffer(SDL_GPUDevice* gpuDevice, const SDL_GPUTransferBufferCreateInfo& createInfo) {
+	inline GpuTransferBuffer createGpuTransferBuffer(SDL_GPUDevice* gpuDevice, const SDL_GPUTransferBufferCreateInfo& createInfo) {
 		return createGpuResource<SDL_GPUTransferBuffer, SDL_ReleaseGPUTransferBuffer>(gpuDevice, SDL_CreateGPUTransferBuffer, &createInfo);
 	}
 
@@ -106,11 +106,11 @@ namespace sdl::gpu {
 
 	// Separate macro for validation that you use AFTER defining the struct
 #define VERTEX_VALIDATE(name) \
-	static_assert(sdl::gpu::VertexType<name>, "VERTEX(" #name ") does not satisfy VertexType requirements")
+	static_assert(sdl::VertexType<name>, "VERTEX(" #name ") does not satisfy VertexType requirements")
 
 	template<typename Type>
 	consteval void checkVertexType() {
-		static_assert(sdl::gpu::VertexType<Type>, "Vertex must be compatible with UBO (Uniform Buffer Object) that requires std140 layout");
+		static_assert(sdl::VertexType<Type>, "Vertex must be compatible with UBO (Uniform Buffer Object) that requires std140 layout");
 	}
 
 	void copyPass(SDL_GPUCommandBuffer* commandBuffer, std::invocable<SDL_GPUCopyPass*> auto&& t) {

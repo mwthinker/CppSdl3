@@ -6,7 +6,7 @@
 
 #include <SDL3/SDL_surface.h>
 
-namespace sdl::gpu {
+namespace sdl {
 	
 	[[nodiscard]]
 	GpuTexture uploadSurface(SDL_GPUDevice* gpuDevice, SDL_Surface* surface);

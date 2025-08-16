@@ -47,8 +47,8 @@ namespace sdl {
 			}
 		};
 
-		sdl::gpu::GpuShader vertexShader;
-		sdl::gpu::GpuShader fragmentShader;
+		sdl::GpuShader vertexShader;
+		sdl::GpuShader fragmentShader;
 	};
 
 }

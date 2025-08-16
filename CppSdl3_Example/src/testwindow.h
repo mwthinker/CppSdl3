@@ -12,7 +12,9 @@
 
 #include <spdlog/spdlog.h>
 
-SDL_Surface* createSurface(int w, int h, sdl::Color color);
+sdl::SdlSurface createSdlSurface(int w, int h, sdl::Color color);
+
+sdl::SdlSurface createSdlSurface(const std::string& fileName);
 
 class TestWindow : public sdl::Window {
 public:
@@ -41,12 +43,12 @@ private:
 	int controllerEvent_ = 0;
 	std::vector<sdl::GameController> gameControllers_;
 
-	sdl::gpu::GpuBuffer myVertexBuffer_;
-	sdl::gpu::GpuGraphicsPipeline myGraphicsPipeline_;
-	sdl::gpu::GpuSampler sampler_;
-	sdl::gpu::GpuTexture texture_;
+	sdl::GpuBuffer myVertexBuffer_;
+	sdl::GpuGraphicsPipeline myGraphicsPipeline_;
+	sdl::GpuSampler sampler_;
+	sdl::GpuTexture texture_;
 	std::vector<sdl::Vertex> vertexes_;
-	sdl::gpu::GpuTexture atlas_;
+	sdl::GpuTexture atlas_;
 
 	sdl::Shader shader_;
 	sdl::ImageAtlas imageAtlas_{600, 600};
