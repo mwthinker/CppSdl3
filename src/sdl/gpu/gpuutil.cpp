@@ -26,7 +26,7 @@ namespace sdl::gpu {
 
 		mapTransferBuffer(
 			gpuDevice,
-			transferBuffer,
+			transferBuffer.get(),
 			std::span{(Uint8*)surface->pixels, static_cast<size_t>(surface->w * surface->h * 4)},
 			false
 		);
@@ -75,7 +75,7 @@ namespace sdl::gpu {
 		return texture;
 	}
 
-	SDL_Rect blitToTexture(SDL_GPUDevice* gpuDevice, GpuTexture& texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border) {
+	SDL_Rect blitToTexture(SDL_GPUDevice* gpuDevice, SDL_GPUTexture* texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border) {
 		auto convertedSurfacePtr = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(nullptr);
 		if (surface->format != SDL_PIXELFORMAT_RGBA32) {
 			convertedSurfacePtr.reset(SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32));
@@ -98,7 +98,7 @@ namespace sdl::gpu {
 
 		mapTransferBuffer(
 			gpuDevice,
-			transferBuffer,
+			transferBuffer.get(),
 			std::span{(Uint8*)surface->pixels, static_cast<size_t>(surface->w * surface->h * 4)},
 			false
 		);
@@ -115,7 +115,7 @@ namespace sdl::gpu {
 			};
 
 			SDL_GPUTextureRegion textureRegion{
-				.texture = texture.get(),
+				.texture = texture,
 				.x = static_cast<Uint32>(rect.x),
 				.y = static_cast<Uint32>(rect.y),
 				.w = static_cast<Uint32>(rect.w),

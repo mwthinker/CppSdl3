@@ -279,7 +279,7 @@ void TestWindow::renderFrame(const sdl::DeltaTime& deltaTime, SDL_GPUTexture* sw
 void TestWindow::addSurfaceToAtlas(SDL_Surface* surface, int border) {
 	fmt::println("Adding surface to atlas: {}x{}, format: {}", 
 		surface->w, surface->h, SDL_GetPixelFormatName(surface->format));
-	sdl::gpu::blitToTexture(gpuDevice_, atlas_, imageAtlas_, surface, border);
+	sdl::gpu::blitToTexture(gpuDevice_, atlas_.get(), imageAtlas_, surface, border);
 }
 
 void TestWindow::preLoop() {
@@ -335,7 +335,7 @@ void TestWindow::preLoop() {
 	sdl::gpu::GpuTransferBuffer transferBuffer = sdl::gpu::createTransferBuffer(gpuDevice_, transferInfo);
 
 	// map the transfer buffer to a pointer
-	mapTransferBuffer(gpuDevice_, transferBuffer, vertexes_);
+	sdl::gpu::mapTransferBuffer(gpuDevice_, transferBuffer.get(), vertexes_);
 
 	// start a copy pass
 	SDL_GPUCommandBuffer* commandBuffer = SDL_AcquireGPUCommandBuffer(device);
@@ -411,11 +411,6 @@ void TestWindow::renderImGui(const sdl::DeltaTime& deltaTime) {
 			spdlog::info("Hello2 pressed");
 		}
 		ImGui::Image(reinterpret_cast<ImTextureID>(texture_.get()), glm::vec2{124, 124});
-		//ImGui::Image(sprite_, glm::vec2{64, 64});
-		//ImGui::ImageWithBg(sprite_, glm::vec2{64, 64}, sdl::color::Red, sdl::color::Green);
-		//ImGui::Hexagon(sprite_, 64.f, true);
-		//static int counter = 0;
-		//if (ImGui::ImageButton("Button", sprite_, glm::vec2{32, 32})) { spdlog::info("Button pressed {}", ++counter); }
 	});
 }
 

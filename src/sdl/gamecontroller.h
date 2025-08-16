@@ -57,7 +57,7 @@ namespace sdl {
 
 		void close();
 
-		SdlGamepadPtr gameController_;
+		SdlGamepad gameController_;
 		SDL_GUID guid_{};
 	};
 

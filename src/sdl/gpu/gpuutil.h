@@ -11,7 +11,7 @@ namespace sdl::gpu {
 	[[nodiscard]]
 	GpuTexture uploadSurface(SDL_GPUDevice* gpuDevice, SDL_Surface* surface);
 
-	SDL_Rect blitToTexture(SDL_GPUDevice* gpuDevice, GpuTexture& texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border);
+	SDL_Rect blitToTexture(SDL_GPUDevice* gpuDevice, SDL_GPUTexture* texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border);
 
 }
 

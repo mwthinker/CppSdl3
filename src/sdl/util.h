@@ -40,20 +40,20 @@ namespace sdl {
 		return SdlUniquePtr<T, DestroyFn>{ptr};
 	}
 
-	using SdlSurfacePtr = SdlUniquePtr<SDL_Surface, SDL_DestroySurface>;
-	using SdlGamepadPtr = SdlUniquePtr<SDL_Gamepad, SDL_CloseGamepad>;
+	using SdlSurface = SdlUniquePtr<SDL_Surface, SDL_DestroySurface>;
+	using SdlGamepad = SdlUniquePtr<SDL_Gamepad, SDL_CloseGamepad>;
 
 	/// @brief Takes ownership of an SDL_Surface and returns a unique pointer to it.
 	/// @param surface
 	/// @return A unique pointer to the SDL_Surface.
-	inline SdlSurfacePtr createSdlSurface(SDL_Surface* surface) {
+	inline SdlSurface createSdlSurface(SDL_Surface* surface) {
 		return makeSdlUnique<SDL_Surface, SDL_DestroySurface>(surface);
 	}
 
 	/// @brief Takes ownership of an SDL_Gamepad and returns a unique pointer to it.
 	/// @param gamepad
 	/// @return A unique pointer to the SDL_Gamepad.
-	inline SdlGamepadPtr createSdlGamepad(SDL_Gamepad* gamepad) {
+	inline SdlGamepad createSdlGamepad(SDL_Gamepad* gamepad) {
 		return makeSdlUnique<SDL_Gamepad, SDL_CloseGamepad>(gamepad);
 	}
 

@@ -120,10 +120,10 @@ namespace sdl::gpu {
 	}
 
 	template<std::ranges::contiguous_range T>
-	void mapTransferBuffer(SDL_GPUDevice* gpuDevice, GpuTransferBuffer& transferBuffer, const T& data, bool cycle = false) {
-		auto bufferData = SDL_MapGPUTransferBuffer(gpuDevice, transferBuffer.get(), cycle);
+	void mapTransferBuffer(SDL_GPUDevice* gpuDevice, SDL_GPUTransferBuffer* transferBuffer, const T& data, bool cycle = false) {
+		auto bufferData = SDL_MapGPUTransferBuffer(gpuDevice, transferBuffer, cycle);
 		SDL_memcpy(bufferData, std::ranges::data(data), std::ranges::size(data) * sizeof(std::ranges::range_value_t<T>));
-		SDL_UnmapGPUTransferBuffer(gpuDevice, transferBuffer.get());
+		SDL_UnmapGPUTransferBuffer(gpuDevice, transferBuffer);
 	}
 
 }
