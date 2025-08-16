@@ -298,6 +298,11 @@ void TestWindow::preLoop() {
 	auto transparentSurface = sdl::createSdlSurface(createSurface(600, 600, sdl::color::Transparent));
 	atlas_ = sdl::gpu::uploadSurface(gpuDevice_, transparentSurface.get());
 
+	textureSamplerBinding_ = SDL_GPUTextureSamplerBinding{
+		.texture = texture_.get(),
+		.sampler = sampler_.get()
+	};
+
 	sdl::GameController::loadGameControllerMappings("gamecontrollerdb.txt");
 	//setHitTestCallback([](const SDL_Point&) { return SDL_HITTEST_DRAGGABLE; });
 
@@ -410,7 +415,7 @@ void TestWindow::renderImGui(const sdl::DeltaTime& deltaTime) {
 		if (ImGui::Button("Hello2", {50, 50})) {
 			spdlog::info("Hello2 pressed");
 		}
-		//ImGui::Image(sprite_, glm::vec2{124, 124});
+		ImGui::Image(ImTextureID(&textureSamplerBinding_), glm::vec2{124, 124});
 		//ImGui::Image(sprite_, glm::vec2{64, 64});
 		//ImGui::ImageWithBg(sprite_, glm::vec2{64, 64}, sdl::color::Red, sdl::color::Green);
 		//ImGui::Hexagon(sprite_, 64.f, true);
