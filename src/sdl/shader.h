@@ -4,7 +4,7 @@
 #include "shader.ps.h"
 #include "shader.vs.h"
 
-#include <sdl/sdlgpu.h>
+#include <sdl/gpu.h>
 #include <glm/glm.hpp>
 
 #include <array>

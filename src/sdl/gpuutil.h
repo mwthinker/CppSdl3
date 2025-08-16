@@ -1,7 +1,7 @@
-#ifndef CPPSDL3_SDL_GPU_GPUUTIL_H
-#define CPPSDL3_SDL_GPU_GPUUTIL_H
+#ifndef CPPSDL3_SDL_GPUUTIL_H
+#define CPPSDL3_SDL_GPUUTIL_H
 
-#include "sdlgpu.h"
+#include "gpu.h"
 #include "imageatlas.h"
 
 #include <SDL3/SDL_surface.h>

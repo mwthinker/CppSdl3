@@ -10,7 +10,7 @@ project(CppSdl3
 set(SOURCES
 	src/sdl/gpuutil.h
 	src/sdl/gpuutil.cpp
-	src/sdl/sdlgpu.h
+	src/sdl/gpu.h
 	
 	src/sdl/color.cpp
 	src/sdl/color.h

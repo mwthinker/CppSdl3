@@ -4,7 +4,7 @@
 #include <sdl/shader.h>
 #include <sdl/window.h>
 #include <sdl/gamecontroller.h>
-#include <sdl/sdlgpu.h>
+#include <sdl/gpu.h>
 #include <sdl/imageatlas.h>
 
 #include <functional>

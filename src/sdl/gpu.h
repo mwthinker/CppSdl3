@@ -1,5 +1,5 @@
-#ifndef CPPSDL3_SDL_SDLGPU_H
-#define CPPSDL3_SDL_SDLGPU_H
+#ifndef CPPSDL3_SDL_GPU_H
+#define CPPSDL3_SDL_GPU_H
 
 #include "sdlexception.h"
 

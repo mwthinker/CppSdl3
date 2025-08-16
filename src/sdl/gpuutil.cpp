@@ -1,5 +1,5 @@
 #include "gpuutil.h"
-#include "sdlgpu.h"
+#include "gpu.h"
 #include "util.h"
 #include "sdlexception.h"
 #include "color.h"
@@ -10,7 +10,7 @@
 namespace sdl {
 
 	GpuTexture uploadSurface(SDL_GPUDevice* gpuDevice, SDL_Surface* surface) {
-		auto convertedSurfacePtr = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(nullptr);
+		SdlSurface convertedSurfacePtr;
 		if (surface->format != SDL_PIXELFORMAT_RGBA32) {
 			convertedSurfacePtr.reset(SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32));
 		}
@@ -76,7 +76,7 @@ namespace sdl {
 	}
 
 	SDL_Rect blitToTexture(SDL_GPUDevice* gpuDevice, SDL_GPUTexture* texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border) {
-		auto convertedSurfacePtr = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(nullptr);
+		SdlSurface convertedSurfacePtr;;
 		if (surface->format != SDL_PIXELFORMAT_RGBA32) {
 			convertedSurfacePtr.reset(SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32));
 		}
