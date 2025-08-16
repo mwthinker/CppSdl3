@@ -2,7 +2,7 @@
 #define CPPSDL3_SDL_GPU_GPUUTIL_H
 
 #include "sdlgpu.h"
-#include "../imageatlas.h"
+#include "imageatlas.h"
 
 #include <SDL3/SDL_surface.h>
 

@@ -1,7 +1,7 @@
 #ifndef CPPSDL3_SDL_SDLGPU_H
 #define CPPSDL3_SDL_SDLGPU_H
 
-#include "../sdlexception.h"
+#include "sdlexception.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <spdlog/spdlog.h>

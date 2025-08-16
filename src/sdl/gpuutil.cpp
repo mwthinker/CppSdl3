@@ -1,9 +1,9 @@
 #include "gpuutil.h"
 #include "sdlgpu.h"
-#include "../util.h"
-#include "../sdlexception.h"
-#include "sdl/color.h"
-#include "sdl/imageatlas.h"
+#include "util.h"
+#include "sdlexception.h"
+#include "color.h"
+#include "imageatlas.h"
 
 #include <stdexcept>
 
