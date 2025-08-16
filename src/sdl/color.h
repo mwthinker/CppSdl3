@@ -33,6 +33,10 @@ namespace sdl {
 
 		explicit constexpr Color(std::string_view hex) noexcept;
 
+		explicit constexpr Color(ImU32 value) noexcept
+			: value_{value} {
+		}
+
 		constexpr uint8_t redByte() const noexcept {
 			return static_cast<uint8_t>((value_ >> IM_COL32_R_SHIFT) & 0xff);
 		}
@@ -108,10 +112,6 @@ namespace sdl {
 		std::string toHexString() const;
 
 	private:
-		explicit constexpr Color(ImU32 value) noexcept
-			: value_{value} {
-		}
-
 		static constexpr uint8_t hexToByte(char first, char second) noexcept {
 			return color::hexToInt(first) << 4 | color::hexToInt(second);
 		}
