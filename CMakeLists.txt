@@ -124,6 +124,7 @@ install(DIRECTORY src/sdl/
 )
 install(FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/cppsdl3.natstepfilter
+	${CMAKE_CURRENT_SOURCE_DIR}/cppsdl3.natvis
 	DESTINATION include/cppsdl3
 )
 
