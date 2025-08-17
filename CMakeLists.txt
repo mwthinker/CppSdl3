@@ -8,16 +8,16 @@ project(CppSdl3
 )
 
 set(SOURCES
-	src/sdl/gpuutil.h
-	src/sdl/gpuutil.cpp
-	src/sdl/gpu.h
-	
+	src/sdl/batch.h
 	src/sdl/color.cpp
 	src/sdl/color.h
 	src/sdl/gamecontroller.cpp
 	src/sdl/gamecontroller.h
 	src/sdl/glm.cpp
 	src/sdl/glm.h
+	src/sdl/gpu.h
+	src/sdl/gpuutil.h
+	src/sdl/gpuutil.cpp
 	src/sdl/imageatlas.cpp
 	src/sdl/imageatlas.h
 	src/sdl/sdlexception.h

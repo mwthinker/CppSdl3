@@ -1,5 +1,5 @@
-#ifndef SDL_SHADER_H
-#define SDL_SHADER_H
+#ifndef CPPSDL3_SHADER_H
+#define CPPSDL3_SHADER_H
 
 #include "shader.ps.h"
 #include "shader.vs.h"
