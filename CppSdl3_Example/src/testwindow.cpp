@@ -287,7 +287,7 @@ void TestWindow::renderFrame(const sdl::DeltaTime& deltaTime, SDL_GPUTexture* sw
 void TestWindow::addSurfaceToAtlas(SDL_Surface* surface, int border) {
 	fmt::println("Adding surface to atlas: {}x{}, format: {}", 
 		surface->w, surface->h, SDL_GetPixelFormatName(surface->format));
-	sdl::blitToTexture(gpuDevice_, atlas_.get(), imageAtlas_, surface, border);
+	auto _ = sdl::blitToGpuTexture(gpuDevice_, atlas_.get(), imageAtlas_, surface, border);
 }
 
 void TestWindow::preLoop() {
@@ -299,6 +299,9 @@ void TestWindow::preLoop() {
 		.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
 		.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
 	});
+
+	sdl::Color color{0.2f, 0.2f, 0.2f, 1.0f};
+	color;
 
 	auto surface = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(IMG_Load("tetris.bmp"));
 	texture_ = sdl::uploadSurface(gpuDevice_, surface.get());
@@ -343,11 +346,11 @@ void TestWindow::preLoop() {
 	sdl::GpuTransferBuffer transferBuffer = sdl::createGpuTransferBuffer(gpuDevice_, transferInfo);
 
 	// map the transfer buffer to a pointer
-	sdl::mapTransferBuffer(gpuDevice_, transferBuffer.get(), vertexes_);
+	sdl::mapGpuTransferBuffer(gpuDevice_, transferBuffer.get(), vertexes_);
 
 	// start a copy pass
 	SDL_GPUCommandBuffer* commandBuffer = SDL_AcquireGPUCommandBuffer(device);
-	sdl::copyPass(commandBuffer, [&](SDL_GPUCopyPass* copyPass) {
+	sdl::gpuCopyPass(commandBuffer, [&](SDL_GPUCopyPass* copyPass) {
 		// where is the data
 		SDL_GPUTransferBufferLocation location{
 			.transfer_buffer = transferBuffer.get(),

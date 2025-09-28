@@ -24,7 +24,7 @@ namespace sdl {
 			}
 		);
 
-		mapTransferBuffer(
+		mapGpuTransferBuffer(
 			gpuDevice,
 			transferBuffer.get(),
 			std::span{(Uint8*)surface->pixels, static_cast<size_t>(surface->w * surface->h * 4)},
@@ -47,7 +47,7 @@ namespace sdl {
 			throw sdl::SdlException("Failed to acquire command buffer");
 		}
 
-		sdl::copyPass(uploadCmdBuf, [&](SDL_GPUCopyPass* copyPass) {
+		sdl::gpuCopyPass(uploadCmdBuf, [&](SDL_GPUCopyPass* copyPass) {
 			SDL_GPUTextureTransferInfo transferInfo{
 				.transfer_buffer = transferBuffer.get(),
 				.offset = 0,
@@ -75,7 +75,7 @@ namespace sdl {
 		return texture;
 	}
 
-	SDL_Rect blitToTexture(SDL_GPUDevice* gpuDevice, SDL_GPUTexture* texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border) {
+	SDL_Rect blitToGpuTexture(SDL_GPUDevice* gpuDevice, SDL_GPUTexture* texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border) {
 		SdlSurface convertedSurfacePtr;;
 		if (surface->format != SDL_PIXELFORMAT_RGBA32) {
 			convertedSurfacePtr.reset(SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32));
@@ -96,7 +96,7 @@ namespace sdl {
 			}
 		);
 
-		mapTransferBuffer(
+		mapGpuTransferBuffer(
 			gpuDevice,
 			transferBuffer.get(),
 			std::span{(Uint8*)surface->pixels, static_cast<size_t>(surface->w * surface->h * 4)},
@@ -108,7 +108,7 @@ namespace sdl {
 			throw sdl::SdlException("Failed to acquire command buffer");
 		}
 
-		sdl::copyPass(uploadCmdBuf, [&](SDL_GPUCopyPass* copyPass) {
+		sdl::gpuCopyPass(uploadCmdBuf, [&](SDL_GPUCopyPass* copyPass) {
 			SDL_GPUTextureTransferInfo transferInfo{
 				.transfer_buffer = transferBuffer.get(),
 				.offset = 0,

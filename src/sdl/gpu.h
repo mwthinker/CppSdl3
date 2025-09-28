@@ -17,9 +17,8 @@ namespace sdl {
 	/// @tparam Resource The GPU resource type
 	/// @tparam ReleaseFunc The SDL release function
 	template <typename Resource, auto ReleaseFunc>
-	struct GpuResourceDeleter {
-		SDL_GPUDevice* gpuDevice_ = nullptr;
-
+	class GpuResourceDeleter {
+	public:
 		GpuResourceDeleter() noexcept = default;
 
 		explicit GpuResourceDeleter(SDL_GPUDevice* gpuDevice) noexcept 
@@ -33,6 +32,9 @@ namespace sdl {
 				spdlog::warn("[GpuResource] Resource destroyed without an associated GpuDevice! Potential leak!");
 			}
 		}
+
+	private:
+		SDL_GPUDevice* gpuDevice_ = nullptr;
 	};
 
 	// Type aliases for GPU resources using unique_ptr with custom deleters
@@ -113,14 +115,14 @@ namespace sdl {
 		static_assert(sdl::VertexType<Type>, "Vertex must be compatible with UBO (Uniform Buffer Object) that requires std140 layout");
 	}
 
-	void copyPass(SDL_GPUCommandBuffer* commandBuffer, std::invocable<SDL_GPUCopyPass*> auto&& t) {
+	void gpuCopyPass(SDL_GPUCommandBuffer* commandBuffer, std::invocable<SDL_GPUCopyPass*> auto&& t) {
 		SDL_GPUCopyPass* copyPass = SDL_BeginGPUCopyPass(commandBuffer);
 		t(copyPass);
 		SDL_EndGPUCopyPass(copyPass);
 	}
 
 	template<std::ranges::contiguous_range T>
-	void mapTransferBuffer(SDL_GPUDevice* gpuDevice, SDL_GPUTransferBuffer* transferBuffer, const T& data, bool cycle = false) {
+	void mapGpuTransferBuffer(SDL_GPUDevice* gpuDevice, SDL_GPUTransferBuffer* transferBuffer, const T& data, bool cycle = false) {
 		auto bufferData = SDL_MapGPUTransferBuffer(gpuDevice, transferBuffer, cycle);
 		SDL_memcpy(bufferData, std::ranges::data(data), std::ranges::size(data) * sizeof(std::ranges::range_value_t<T>));
 		SDL_UnmapGPUTransferBuffer(gpuDevice, transferBuffer);
