@@ -76,7 +76,7 @@ namespace sdl {
 	}
 
 	SDL_Rect blitToGpuTexture(SDL_GPUDevice* gpuDevice, SDL_GPUTexture* texture, sdl::ImageAtlas& imageAtlas, SDL_Surface* surface, int border) {
-		SdlSurface convertedSurfacePtr;;
+		SdlSurface convertedSurfacePtr;
 		if (surface->format != SDL_PIXELFORMAT_RGBA32) {
 			convertedSurfacePtr.reset(SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32));
 		}

@@ -50,6 +50,8 @@ namespace sdl {
 	void Shader::uploadProjectionMatrix(SDL_GPUCommandBuffer* commandBuffer, const glm::mat4& projection) {
 		// Maps to b0 in fragment shader
 		SDL_PushGPUVertexUniformData(commandBuffer, 0, &projection, sizeof(projection));
+		// Must be multiple of 16 bytes, SDL_GPU uses std140 layout for uniform buffers
+		static_assert(sizeof(projection) % 16 == 0, "Uniform buffer size must be multiple of 16 bytes");
 	}
 
 }

@@ -3,7 +3,7 @@ project(ImGui
 		"ImGui branch: https://github.com/ocornut/imgui"
 	LANGUAGES
 		CXX
-	VERSION 1.92.3
+	VERSION 1.92.4
 )
 
 include(FetchContent)
@@ -11,7 +11,7 @@ FetchContent_Declare(RemoteImGui
 	GIT_REPOSITORY
 		https://github.com/ocornut/imgui.git
 	GIT_TAG
-		62275e877a691bd2e51d1ca86bdfed49fa5cb297
+		e7d2d636affeeac1fc7175fb13472ca02d1bc0d1
 )
 FetchContent_MakeAvailable(RemoteImGui)
 FetchContent_GetProperties(RemoteImGui
@@ -80,7 +80,6 @@ target_compile_definitions(ImGui
 		IMGUI_USER_CONFIG=\"${IMGUI_USER_CONFIG}\"
 		IMGUI_DEFINE_MATH_OPERATORS
 		GLM_ENABLE_EXPERIMENTAL
-		GLM_FORCE_DEFAULT_ALIGNED_GENTYPES # To be compatible with UBO that assumes std140 layout
 )
 
 set_target_properties(ImGui

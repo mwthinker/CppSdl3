@@ -11,16 +11,17 @@
 
 namespace sdl {
 
-	VERTEX(Vertex) {
+	// Does not need to be std140 because we define the layout in Shader struct.
+	struct Vertex {
 		glm::vec3 position;
 		glm::vec2 tex;
 		glm::vec4 color;
 	};
-	VERTEX_VALIDATE(Vertex);
+	static_assert(VertexType<Vertex>, "Vertex must satisfy VertexType");
 
 	struct Shader {
 		void load(SDL_GPUDevice* gpuDevice);
-
+		
 		static void uploadProjectionMatrix(SDL_GPUCommandBuffer* commandBuffer, const glm::mat4& projection);
 
 		static constexpr std::array<SDL_GPUVertexAttribute, 3> attributes = {

@@ -10,7 +10,7 @@
   - End names with a trailing underscore (`score_`).
 - Prefer `enum class` over traditional enums.
 - Use classic header guards (`#ifndef`, `#define`, `#endif`) with guard names like `APP_GAME_INPUT_H` for `app::game` namespace in file `input.h`.
-- Prefer `std::` library facilities over C-style code and avoid macros.
+- Prefer `std` library facilities over C-style code and avoid macros.
 - Write clear, self-documenting code with meaningful names.
 - For virtual functions, use one of `override`, `final`, or `virtual`.
 - Use `nullptr` instead of `NULL` or `0`.

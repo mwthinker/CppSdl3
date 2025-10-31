@@ -4,7 +4,7 @@ project(CppSdl3
 		"A C++ wrapper around SDL3 (Simple Direct Media Layer) and SDL_gpu embedded with ImGui (Dear ImGui)"
 	LANGUAGES
 		CXX
-	VERSION 0.7.0
+	VERSION 0.8.0
 )
 
 set(SOURCES
