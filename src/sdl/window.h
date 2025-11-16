@@ -83,8 +83,8 @@ namespace sdl {
 		virtual void postLoop() {}
 		
 		// Is called each loop cycle until the event queue is empty.
-		virtual void processEvent(const SDL_Event& windowEvent) {}
-		virtual void renderImGui(const DeltaTime& deltaTime) {};
+		virtual void processEvent([[maybe_unused]] const SDL_Event& windowEvent) {}
+		virtual void renderImGui([[maybe_unused]] const DeltaTime& deltaTime) {};
 		
 		// Override to add custom SDL_gpu rendering that is drawn before the ImGui rendering.
 		// Any override should clear the swapchainTexture.

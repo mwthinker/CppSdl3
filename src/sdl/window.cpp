@@ -274,7 +274,7 @@ namespace sdl {
 		SDL_SubmitGPUCommandBuffer(commandBuffer);
 	}
 
-	void Window::renderFrame(const DeltaTime& deltaTime, SDL_GPUTexture* swapchainTexture, SDL_GPUCommandBuffer* commandBuffer) {
+	void Window::renderFrame([[maybe_unused]] const DeltaTime& deltaTime, SDL_GPUTexture* swapchainTexture, SDL_GPUCommandBuffer* commandBuffer) {
 		SDL_GPUColorTargetInfo targetInfo{
 			.texture = swapchainTexture,
 			.clear_color = clearColor_,
@@ -340,7 +340,7 @@ namespace sdl {
 			height_ = height;
 		}
 	}
-	SDL_HitTestResult Window::hitTestCallback(SDL_Window* sdlWindow, const SDL_Point* area, void* data) {
+	SDL_HitTestResult Window::hitTestCallback([[maybe_unused]] SDL_Window* sdlWindow, const SDL_Point* area, void* data) {
 		return static_cast<Window*>(data)->onHitTest_(*area);
 	}
 

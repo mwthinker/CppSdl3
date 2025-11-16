@@ -9,6 +9,8 @@ project(CppSdl3
 
 add_library(CppSdl3 STATIC)
 add_library(CppSdl3::CppSdl3 ALIAS CppSdl3)
+
+include(GNUInstallDirs)
 add_subdirectory(ImGui)
 
 target_sources(CppSdl3
@@ -106,48 +108,44 @@ endif ()
 # Install
 install(TARGETS CppSdl3
 	EXPORT CppSdl3Targets
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-	RUNTIME DESTINATION bin
-	INCLUDES DESTINATION include/cppsdl3
-	FILE_SET HEADERS DESTINATION include/cppsdl3
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cppsdl3
+	FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cppsdl3
 )
-
 install(FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/cppsdl3.natstepfilter
 	${CMAKE_CURRENT_SOURCE_DIR}/cppsdl3.natvis
-	DESTINATION include/cppsdl3
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cppsdl3
 )
 
 include(CMakePackageConfigHelpers)
 
-# Export the package configuration
-install(EXPORT CppSdl3Targets
+# Export targets
+install(
+	EXPORT CppSdl3Targets
 	FILE CppSdl3Targets.cmake
 	NAMESPACE CppSdl3::
-	DESTINATION share/cmake/cppsdl3
+	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/CppSdl3
 )
 
-# Generate the package configuration file
+# Config file
 configure_package_config_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/CppSdl3Config.cmake.in
 	${CMAKE_CURRENT_BINARY_DIR}/CppSdl3Config.cmake
-	INSTALL_DESTINATION share/cmake/cppsdl3
+	INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/CppSdl3
 )
 
-# Install the generated package configuration file
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CppSdl3Config.cmake
-	DESTINATION share/cmake/cppsdl3
+install(
+	FILES
+		${CMAKE_CURRENT_BINARY_DIR}/CppSdl3Config.cmake
+		${CMAKE_CURRENT_BINARY_DIR}/CppSdl3ConfigVersion.cmake
+	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/CppSdl3
 )
 
-# Install the package configuration file
-write_basic_package_version_file(
-	${CMAKE_CURRENT_BINARY_DIR}/CppSdl3ConfigVersion.cmake
-	VERSION ${PROJECT_VERSION}
-	COMPATIBILITY AnyNewerVersion
+# License
+install(
+	FILES LICENSE.txt
+	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/doc/CppSdl3
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CppSdl3ConfigVersion.cmake
-	DESTINATION share/cmake/cppsdl3
-)
-
-install(FILES LICENSE.txt DESTINATION share/doc/cppsdl3)
