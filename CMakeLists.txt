@@ -4,48 +4,48 @@ project(CppSdl3
 		"A C++ wrapper around SDL3 (Simple Direct Media Layer) and SDL_gpu embedded with ImGui (Dear ImGui)"
 	LANGUAGES
 		CXX
-	VERSION 0.8.0
+	VERSION 0.10.0
 )
 
-set(SOURCES
-	src/sdl/batch.h
-	src/sdl/color.cpp
-	src/sdl/color.h
-	src/sdl/gamecontroller.cpp
-	src/sdl/gamecontroller.h
-	src/sdl/glm.cpp
-	src/sdl/glm.h
-	src/sdl/gpu.h
-	src/sdl/gpuutil.h
-	src/sdl/gpuutil.cpp
-	src/sdl/imageatlas.cpp
-	src/sdl/imageatlas.h
-	src/sdl/sdlexception.h
-	src/sdl/shader.cpp
-	src/sdl/shader.h
-	src/sdl/shader.vs.h
-	src/sdl/shader.ps.h
-	src/sdl/window.cpp
-	src/sdl/window.h
-	src/sdl/util.cpp
-	src/sdl/util.h
-
-	vcpkg.json
-	CMakePresets.json
-	cppsdl3.natstepfilter
-	cppsdl3.natvis
-)
-add_library(CppSdl3 STATIC
-	${SOURCES}
-)
+add_library(CppSdl3 STATIC)
 add_library(CppSdl3::CppSdl3 ALIAS CppSdl3)
 add_subdirectory(ImGui)
 
-source_group(TREE
-	${CMAKE_CURRENT_SOURCE_DIR}
-	FILES
-		${SOURCES}
+target_sources(CppSdl3
+	PUBLIC
+		FILE_SET HEADERS
+		BASE_DIRS src
+		FILES
+			src/sdl/batch.h
+			src/sdl/color.h
+			src/sdl/gamecontroller.h
+			src/sdl/glm.h
+			src/sdl/gpu.h
+			src/sdl/gpuutil.h
+			src/sdl/imageatlas.h
+			src/sdl/sdlexception.h
+			src/sdl/shader.h
+			src/sdl/shader.vs.h
+			src/sdl/shader.ps.h
+			src/sdl/window.h
+			src/sdl/util.h
+	PRIVATE
+		vcpkg.json
+		CMakePresets.json
+		cppsdl3.natstepfilter
+		cppsdl3.natvis
+
+		src/sdl/color.cpp
+		src/sdl/gamecontroller.cpp
+		src/sdl/glm.cpp
+		src/sdl/gpuutil.cpp
+		src/sdl/imageatlas.cpp
+		src/sdl/shader.cpp
+		src/sdl/window.cpp
+		src/sdl/util.cpp
 )
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_target_properties(
@@ -70,12 +70,6 @@ endif()
 target_compile_definitions(CppSdl3
 	PUBLIC
 		NOMINMAX
-)
-
-target_include_directories(CppSdl3
-	PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-		$<INSTALL_INTERFACE:include/cppsdl3>
 )
 
 find_package(spdlog CONFIG REQUIRED)
@@ -116,12 +110,9 @@ install(TARGETS CppSdl3
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
 	INCLUDES DESTINATION include/cppsdl3
+	FILE_SET HEADERS DESTINATION include/cppsdl3
 )
 
-install(DIRECTORY src/sdl/
-	DESTINATION include/cppsdl3/sdl
-	FILES_MATCHING PATTERN "*.h"
-)
 install(FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/cppsdl3.natstepfilter
 	${CMAKE_CURRENT_SOURCE_DIR}/cppsdl3.natvis

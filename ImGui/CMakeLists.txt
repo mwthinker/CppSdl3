@@ -21,39 +21,42 @@ FetchContent_GetProperties(RemoteImGui
 
 set(IMGUI_USER_CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/src/imconfig.h)
 
-add_library(ImGui STATIC
-	${RemoteImGui_SOURCE_DIR}/imgui.cpp
-	${RemoteImGui_SOURCE_DIR}/imgui.h
-	${RemoteImGui_SOURCE_DIR}/imgui_demo.cpp
-	${RemoteImGui_SOURCE_DIR}/imgui_draw.cpp
-	${RemoteImGui_SOURCE_DIR}/imgui_internal.h
-	${RemoteImGui_SOURCE_DIR}/imgui_tables.cpp
-	${RemoteImGui_SOURCE_DIR}/imgui_widgets.cpp
-	${RemoteImGui_SOURCE_DIR}/imstb_rectpack.h
-	${RemoteImGui_SOURCE_DIR}/imstb_textedit.h
-	${RemoteImGui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
-	${RemoteImGui_SOURCE_DIR}/misc/cpp/imgui_stdlib.h
-	${RemoteImGui_SOURCE_DIR}/misc/freetype/imgui_freetype.cpp
-	${RemoteImGui_SOURCE_DIR}/misc/freetype/imgui_freetype.h
-		
-	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
-	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdl3.h
-	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.cpp
-	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.h
-	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3_shaders.h
-	${RemoteImGui_SOURCE_DIR}/misc/debuggers/imgui.natvis
-	${RemoteImGui_SOURCE_DIR}/misc/debuggers/imgui.natstepfilter
-	${IMGUI_USER_CONFIG}
-	${CMAKE_CURRENT_SOURCE_DIR}/src/imgui_user.h
-)
+add_library(ImGui STATIC)
 add_library(CppSdl3::ImGui ALIAS ImGui)
 
-target_include_directories(ImGui
+target_sources(ImGui
 	PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-		$<BUILD_INTERFACE:${RemoteImGui_SOURCE_DIR}>
-		$<BUILD_INTERFACE:${RemoteImGui_SOURCE_DIR}/backends>
-		$<INSTALL_INTERFACE:include/cppsdl3/imgui>
+		FILE_SET HEADERS
+		BASE_DIRS
+			${RemoteImGui_SOURCE_DIR}
+			${CMAKE_CURRENT_SOURCE_DIR}/src
+			
+		FILES
+			${RemoteImGui_SOURCE_DIR}/imgui.h
+			${RemoteImGui_SOURCE_DIR}/misc/cpp/imgui_stdlib.h
+			${RemoteImGui_SOURCE_DIR}/misc/freetype/imgui_freetype.h
+			${CMAKE_CURRENT_SOURCE_DIR}/src/imgui_user.h
+			${IMGUI_USER_CONFIG}
+			${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.h
+			${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdl3.h
+
+	PRIVATE
+		${RemoteImGui_SOURCE_DIR}/imgui.cpp
+		${RemoteImGui_SOURCE_DIR}/imgui_demo.cpp
+		${RemoteImGui_SOURCE_DIR}/imgui_draw.cpp
+		${RemoteImGui_SOURCE_DIR}/imgui_internal.h
+		${RemoteImGui_SOURCE_DIR}/imgui_tables.cpp
+		${RemoteImGui_SOURCE_DIR}/imgui_widgets.cpp
+		${RemoteImGui_SOURCE_DIR}/imstb_rectpack.h
+		${RemoteImGui_SOURCE_DIR}/imstb_textedit.h
+		${RemoteImGui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
+		${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
+		${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.cpp
+		
+		${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3_shaders.h
+		${RemoteImGui_SOURCE_DIR}/misc/debuggers/imgui.natvis
+		${RemoteImGui_SOURCE_DIR}/misc/debuggers/imgui.natstepfilter
+		${RemoteImGui_SOURCE_DIR}/misc/freetype/imgui_freetype.cpp
 )
 
 find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3)
@@ -89,46 +92,17 @@ set_target_properties(ImGui
 		CXX_EXTENSIONS NO
 )
 
-# -------------------------------------------------------------------------
 install(TARGETS ImGui
 	EXPORT CppSdl3Targets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 	RUNTIME DESTINATION bin
 	INCLUDES DESTINATION include
+	FILE_SET HEADERS DESTINATION include/cppsdl3/imgui
 )
 
-# Install specific files from the misc directory
 install(FILES
 	${RemoteImGui_SOURCE_DIR}/misc/debuggers/imgui.natvis
 	${RemoteImGui_SOURCE_DIR}/misc/debuggers/imgui.natstepfilter
-	DESTINATION include/cppsdl3/imgui/misc/debuggers
-)
-install(FILES
-	${RemoteImGui_SOURCE_DIR}/misc/freetype/imgui_freetype.h
-	DESTINATION include/cppsdl3/imgui/misc/freetype
-)
-install(FILES
-	${RemoteImGui_SOURCE_DIR}/misc/cpp/imgui_stdlib.h
-	DESTINATION include/cppsdl3/imgui/misc/cpp
-)
-
-# Install specific files from the root of RemoteImGui_SOURCE_DIR
-install(FILES
-	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3.h
-	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdl3.h
-	${RemoteImGui_SOURCE_DIR}/backends/imgui_impl_sdlgpu3_shaders.h
-	${RemoteImGui_SOURCE_DIR}/imgui.h
-	${RemoteImGui_SOURCE_DIR}/imgui_internal.h
-	${RemoteImGui_SOURCE_DIR}/imstb_rectpack.h
-	${RemoteImGui_SOURCE_DIR}/imstb_textedit.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/imconfig.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/imgui_user.h
 	DESTINATION include/cppsdl3/imgui
-)
-
-install(EXPORT CppSdl3Targets
-	FILE CppSdl3Targets.cmake
-	NAMESPACE CppSdl3::
-	DESTINATION share/cmake/cppsdl3
 )

@@ -23,7 +23,7 @@ target_link_libraries(CppSdl3_Test
 
 set_target_properties(CppSdl3_Test
 	PROPERTIES
-		CXX_STANDARD 20
+		CXX_STANDARD 23
 		CXX_STANDARD_REQUIRED YES
 		CXX_EXTENSIONS NO
 )

@@ -1,9 +1,12 @@
+# General Guidelines
+- Write clear, maintainable, and well-documented code.
+- Use tabs for indentation
+
 # C++ code
 - Use C++23 standard features (avoid modules).
 - Follow the C++ Core Guidelines and modern best practices.
 - Use smart pointers and RAII; avoid raw pointers unless absolutely necessary.
 - Use `const` and `constexpr` wherever possible.
-- Format code with consistent indentation: **use tabs** (1 tab = 4 spaces visually).
 - Prefer brace initialization `{}` for variables and objects, except for inline member initializers where `=` is preferred.
 - For member variables:
   - Use inline initialization with `=`.

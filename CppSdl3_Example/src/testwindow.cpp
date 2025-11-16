@@ -232,6 +232,8 @@ void TestWindow::renderFrame(const sdl::DeltaTime& deltaTime, SDL_GPUTexture* sw
 		.offset = 0
 	};
 
+	[[maybe_unused]] ImVec4 testingVec4{0.0f, 1.0f, 2.0f, 3.0f};
+
 	glm::mat4 projection{1};
 	shader_.uploadProjectionMatrix(commandBuffer, projection);
 		
@@ -300,8 +302,7 @@ void TestWindow::preLoop() {
 		.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
 	});
 
-	sdl::Color color{0.2f, 0.2f, 0.2f, 1.0f};
-	color;
+	[[maybe_unused]] sdl::Color color{0.2f, 0.2f, 0.2f, 1.0f};
 
 	auto surface = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(IMG_Load("tetris.bmp"));
 	texture_ = sdl::uploadSurface(gpuDevice_, surface.get());
@@ -387,7 +388,7 @@ void TestWindow::preLoop() {
 			.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
 			.alpha_blend_op = SDL_GPU_BLENDOP_ADD,
 			.enable_blend = true,
-	}
+		}
 	};
 
 	shader_.load(gpuDevice_);
@@ -401,12 +402,12 @@ void TestWindow::preLoop() {
 			.num_vertex_buffers = 1,
 			.vertex_attributes = shader_.attributes.data(),
 			.num_vertex_attributes = (Uint32) shader_.attributes.size()
-	},
+		},
 		.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
 		.target_info = SDL_GPUGraphicsPipelineTargetInfo{
 			.color_target_descriptions = &colorTargetDescription,
 			.num_color_targets = 1,
-	}
+		}
 	};
 	myGraphicsPipeline_ = sdl::createGpuGraphicsPipeline(gpuDevice_, pipelineInfo);
 	if (!myGraphicsPipeline_) {
@@ -422,6 +423,8 @@ void TestWindow::renderImGui(const sdl::DeltaTime& deltaTime) {
 			spdlog::info("Hello2 pressed");
 		}
 		ImGui::Image(reinterpret_cast<ImTextureID>(texture_.get()), glm::vec2{124, 124});
+		static std::string inputText;
+		ImGui::InputText("InputText", &inputText);
 	});
 }
 
