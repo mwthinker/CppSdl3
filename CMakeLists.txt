@@ -4,7 +4,7 @@ project(CppSdl3
 		"A C++ wrapper around SDL3 (Simple Direct Media Layer) and SDL_gpu embedded with ImGui (Dear ImGui)"
 	LANGUAGES
 		CXX
-	VERSION 0.10.0
+	VERSION 0.11.0
 )
 
 add_library(CppSdl3 STATIC)
@@ -135,6 +135,13 @@ configure_package_config_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/CppSdl3Config.cmake.in
 	${CMAKE_CURRENT_BINARY_DIR}/CppSdl3Config.cmake
 	INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/CppSdl3
+)
+
+# Generate the version file
+write_basic_package_version_file(
+	${CMAKE_CURRENT_BINARY_DIR}/CppSdl3ConfigVersion.cmake
+	VERSION ${PROJECT_VERSION}
+	COMPATIBILITY AnyNewerVersion
 )
 
 install(
