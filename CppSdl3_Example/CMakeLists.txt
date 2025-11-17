@@ -5,20 +5,14 @@ project(CppSdl3_Example
 		CXX
 )
 
-set(SOURCES
+add_executable(CppSdl3_Example
 	src/types.h
 	src/main.cpp
 	src/testwindow.cpp
 	src/testwindow.h
 )
 
-add_executable(CppSdl3_Example ${SOURCES})
-
-source_group(TREE
-	${CMAKE_CURRENT_SOURCE_DIR}
-	FILES
-		${SOURCES}
-)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (MSVC)
 	target_compile_options(CppSdl3_Example

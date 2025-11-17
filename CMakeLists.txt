@@ -13,41 +13,48 @@ add_library(CppSdl3::CppSdl3 ALIAS CppSdl3)
 include(GNUInstallDirs)
 add_subdirectory(ImGui)
 
+set(CPPSDL3_HEADERS
+	src/sdl/batch.h
+	src/sdl/color.h
+	src/sdl/gamecontroller.h
+	src/sdl/glm.h
+	src/sdl/gpu.h
+	src/sdl/gpuutil.h
+	src/sdl/imageatlas.h
+	src/sdl/sdlexception.h
+	src/sdl/shader.h
+	src/sdl/shader.vs.h
+	src/sdl/shader.ps.h
+	src/sdl/window.h
+	src/sdl/util.h
+)
+
+set(CPPSDL3_SOURCES
+	vcpkg.json
+	CMakePresets.json
+	cppsdl3.natstepfilter
+	cppsdl3.natvis
+
+	src/sdl/color.cpp
+	src/sdl/gamecontroller.cpp
+	src/sdl/glm.cpp
+	src/sdl/gpuutil.cpp
+	src/sdl/imageatlas.cpp
+	src/sdl/shader.cpp
+	src/sdl/window.cpp
+	src/sdl/util.cpp
+)
+
 target_sources(CppSdl3
 	PUBLIC
 		FILE_SET HEADERS
 		BASE_DIRS src
-		FILES
-			src/sdl/batch.h
-			src/sdl/color.h
-			src/sdl/gamecontroller.h
-			src/sdl/glm.h
-			src/sdl/gpu.h
-			src/sdl/gpuutil.h
-			src/sdl/imageatlas.h
-			src/sdl/sdlexception.h
-			src/sdl/shader.h
-			src/sdl/shader.vs.h
-			src/sdl/shader.ps.h
-			src/sdl/window.h
-			src/sdl/util.h
+		FILES ${CPPSDL3_HEADERS}
 	PRIVATE
-		vcpkg.json
-		CMakePresets.json
-		cppsdl3.natstepfilter
-		cppsdl3.natvis
-
-		src/sdl/color.cpp
-		src/sdl/gamecontroller.cpp
-		src/sdl/glm.cpp
-		src/sdl/gpuutil.cpp
-		src/sdl/imageatlas.cpp
-		src/sdl/shader.cpp
-		src/sdl/window.cpp
-		src/sdl/util.cpp
+		${CPPSDL3_SOURCES}
 )
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${CPPSDL3_SOURCES} ${CPPSDL3_HEADERS}) 
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_target_properties(
