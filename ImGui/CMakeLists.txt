@@ -3,7 +3,7 @@ project(ImGui
 		"ImGui branch: https://github.com/ocornut/imgui"
 	LANGUAGES
 		CXX
-	VERSION 1.92.4
+	VERSION 1.92.5
 )
 
 include(FetchContent)
@@ -11,7 +11,7 @@ FetchContent_Declare(RemoteImGui
 	GIT_REPOSITORY
 		https://github.com/ocornut/imgui.git
 	GIT_TAG
-		e7d2d636affeeac1fc7175fb13472ca02d1bc0d1
+		3912b3d9a9c1b3f17431aebafd86d2f40ee6e59c
 )
 FetchContent_MakeAvailable(RemoteImGui)
 FetchContent_GetProperties(RemoteImGui
@@ -83,6 +83,11 @@ target_compile_definitions(ImGui
 		IMGUI_USER_CONFIG=\"${IMGUI_USER_CONFIG}\"
 		IMGUI_DEFINE_MATH_OPERATORS
 		GLM_ENABLE_EXPERIMENTAL
+
+		IMGUI_VERSION="${PROJECT_VERSION}"
+		IMGUI_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+		IMGUI_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+		IMGUI_VERSION_PATCH=${PROJECT_VERSION_PATCH}
 )
 
 set_target_properties(ImGui
@@ -100,6 +105,16 @@ install(TARGETS ImGui
 	INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 	FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cppsdl3/imgui
 )
+
+# Install PDB files for debugging support on Windows
+if (MSVC)
+	install(
+		FILES $<TARGET_FILE_DIR:ImGui>/ImGui.pdb
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		CONFIGURATIONS Debug RelWithDebInfo
+		OPTIONAL
+	)
+endif()
 
 install(FILES
 	${RemoteImGui_SOURCE_DIR}/misc/debuggers/imgui.natvis

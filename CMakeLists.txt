@@ -4,7 +4,7 @@ project(CppSdl3
 		"A C++ wrapper around SDL3 (Simple Direct Media Layer) and SDL_gpu embedded with ImGui (Dear ImGui)"
 	LANGUAGES
 		CXX
-	VERSION 0.11.0
+	VERSION 0.12.0
 )
 
 add_library(CppSdl3 STATIC)
@@ -79,6 +79,11 @@ endif()
 target_compile_definitions(CppSdl3
 	PUBLIC
 		NOMINMAX
+
+		CPPSDL3_VERSION="${PROJECT_VERSION}"
+		CPPSDL3_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+		CPPSDL3_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+		CPPSDL3_VERSION_PATCH=${PROJECT_VERSION_PATCH}
 )
 
 find_package(spdlog CONFIG REQUIRED)
@@ -102,6 +107,10 @@ message(STATUS "CppSdl3_Example is available to add: -DCppSdl3_Example=1")
 option(CppSdl3_Example "Add CppSdl3_Example project." OFF)
 if (CppSdl3_Example)
 	add_subdirectory(CppSdl3_Example)
+endif ()
+
+if (MSVC)
+	message(STATUS "MSVC_TOOLSET_VERSION: ${MSVC_VERSION}")
 endif ()
 
 message(STATUS "MSVC_TOOLSET_VERSION: ${MSVC_VERSION}")
@@ -137,6 +146,16 @@ install(
 	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/CppSdl3
 )
 
+# Install PDB files for debugging support on Windows
+if (MSVC)
+	install(
+		FILES $<TARGET_FILE_DIR:CppSdl3>/CppSdl3.pdb
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		CONFIGURATIONS Debug RelWithDebInfo
+		OPTIONAL
+	)
+endif()
+
 # Config file
 configure_package_config_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/CppSdl3Config.cmake.in
@@ -147,7 +166,6 @@ configure_package_config_file(
 # Generate the version file
 write_basic_package_version_file(
 	${CMAKE_CURRENT_BINARY_DIR}/CppSdl3ConfigVersion.cmake
-	VERSION ${PROJECT_VERSION}
 	COMPATIBILITY AnyNewerVersion
 )
 
@@ -158,7 +176,6 @@ install(
 	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/CppSdl3
 )
 
-# License
 install(
 	FILES LICENSE.txt
 	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/doc/CppSdl3
