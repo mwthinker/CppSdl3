@@ -66,7 +66,11 @@ void testImGuiWindow() {
 	};
 
 	w.setSpaceFunction(func);
-	w.startLoop();
+	try {
+		w.startLoop();
+	} catch (const std::exception& e) {
+		spdlog::error("Exception: {}", e.what());
+	}
 }
 
 void showHelp(const std::string& programName) {

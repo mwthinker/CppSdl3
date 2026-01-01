@@ -3,6 +3,7 @@
 
 #include <spdlog/spdlog.h>
 #include <SDL3_image/SDL_image.h>
+#include <fmt/ranges.h>
 
 #include <thread>
 #include <chrono>
@@ -42,7 +43,7 @@ namespace sdl {
 			ImGui::Window("Html Colors", &open, ImGuiWindowFlags_NoResize, []() {
 				ImGui::Text("Copy color to clipboard by clicking");
 
-				static const auto htmlColors = color::html::getHtmlColors();
+				static const auto htmlColors = sdl::color::html::getHtmlColors();
 				static std::string colorStr = "                   ";
 				int nbr = 0;
 				for (const auto& [name, color] : htmlColors) {
@@ -62,19 +63,20 @@ namespace sdl {
 
 		[[nodiscard]] SDL_GPUDevice* initialize(SDL_Window* window) {
 			int driversNbr = SDL_GetNumGPUDrivers();
-			const char* preferredDriver = nullptr;
+			std::string preferredDriver;
+			std::vector<std::string> drivers;
 			for (int i = 0; i < driversNbr; ++i) {
-				auto driver = SDL_GetGPUDriver(i);
-				spdlog::info("[GpuContext] GPU driver available: {}", driver);
-				if (std::strcmp(driver, "direct3d12") == 0) {
+				const auto& driver = drivers.emplace_back(SDL_GetGPUDriver(i));
+				if (driver == "direct3d12") {
 					preferredDriver = driver;
 				}
 			}
-			if (preferredDriver != nullptr) {
+			spdlog::info("[GpuContext] GPU driver available: {}", fmt::join(drivers, ", "));
+			if (preferredDriver.empty()) {
 				spdlog::info("[GpuContext] Preferred GPU driver: {}", preferredDriver);
 			}
 
-			auto gpuDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, true, preferredDriver);
+			auto gpuDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL, true, preferredDriver.c_str());
 			if (!gpuDevice) {
 				throw SdlException{"[GpuContext] Failed to create GPU device"};
 			}
@@ -104,18 +106,20 @@ namespace sdl {
 			SDL_VERSIONNUM_MAJOR(linked),
 			SDL_VERSIONNUM_MINOR(linked),
 			SDL_VERSIONNUM_MICRO(linked));
+
+		spdlog::info("[sdl::Window] CppSdl3 Version: {}", CPPSDL3_VERSION);
+		spdlog::info("[sdl::Window] ImGui Version (Docking): {}", ImGui::GetVersion());
 	}
 
 	Window::~Window() {
 		if (icon_) {
 			SDL_DestroySurface(icon_);
 		}
-		
-		ImGui_ImplSDLGPU3_Shutdown();
-		ImGui_ImplSDL3_Shutdown();
-		ImGui::DestroyContext();
 
 		if (gpuDevice_) {
+			ImGui_ImplSDLGPU3_Shutdown();
+			ImGui_ImplSDL3_Shutdown();
+
 			SDL_WaitForGPUIdle(gpuDevice_);
 
 			if (window_) {
