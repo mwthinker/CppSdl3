@@ -3,7 +3,7 @@ project(ImGui
 		"ImGui branch: https://github.com/ocornut/imgui"
 	LANGUAGES
 		CXX
-	VERSION 1.92.5
+	VERSION 1.92.7
 )
 
 include(FetchContent)
@@ -11,7 +11,7 @@ FetchContent_Declare(RemoteImGui
 	GIT_REPOSITORY
 		https://github.com/ocornut/imgui.git
 	GIT_TAG
-		3912b3d9a9c1b3f17431aebafd86d2f40ee6e59c
+		b1bcb12a624af7509894c8e77dd47416997777fa
 )
 FetchContent_MakeAvailable(RemoteImGui)
 FetchContent_GetProperties(RemoteImGui
@@ -83,11 +83,6 @@ target_compile_definitions(ImGui
 		IMGUI_USER_CONFIG=\"${IMGUI_USER_CONFIG}\"
 		IMGUI_DEFINE_MATH_OPERATORS
 		GLM_ENABLE_EXPERIMENTAL
-
-		IMGUI_VERSION="${PROJECT_VERSION}"
-		IMGUI_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
-		IMGUI_VERSION_MINOR=${PROJECT_VERSION_MINOR}
-		IMGUI_VERSION_PATCH=${PROJECT_VERSION_PATCH}
 )
 
 set_target_properties(ImGui

@@ -85,8 +85,12 @@ void showHelp(const std::string& programName) {
 }
 
 void runAll() {
-	testPrintColors();
-	testImGuiWindow();
+	try {
+		testPrintColors();
+		testImGuiWindow();
+	} catch (const std::exception& e) {
+		spdlog::error("Exception: {}", e.what());
+	}
 }
 
 void initLogger() {

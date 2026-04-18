@@ -91,7 +91,7 @@ def emit_cpp_header(shader_blobs: Dict[str, bytes], output_header: str, namespac
             f.write(f"#endif\n")
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Compile HLSL shaders to DXIL and SPIR-V")
+    parser = argparse.ArgumentParser(description="Compile HLSL shaders, to DXIL and SPIR-V, and embed it in a C++ header (same name but postfixed with .h)")
     parser.add_argument("hlsl_file", help="Path to the HLSL shader file")
     parser.add_argument("entry", help="Shader entry point (e.g., VSMain, PSMain)")
     parser.add_argument("target", help="Shader target (e.g., vs_6_0, ps_6_0)")

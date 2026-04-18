@@ -10,30 +10,43 @@
 namespace sdl {
 
 	GpuTexture uploadSurface(SDL_GPUDevice* gpuDevice, SDL_Surface* surface) {
+		SDL_GPUTextureFormat textureFormat = SDL_GetGPUTextureFormatFromPixelFormat(surface->format);
 		SdlSurface convertedSurfacePtr;
-		if (surface->format != SDL_PIXELFORMAT_RGBA32) {
-			convertedSurfacePtr.reset(SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32));
+		if (textureFormat != SDL_GPU_TEXTUREFORMAT_INVALID && SDL_GPUTextureSupportsFormat(
+			gpuDevice,
+			textureFormat,
+			SDL_GPU_TEXTURETYPE_2D,
+			SDL_GPU_TEXTUREUSAGE_COLOR_TARGET
+		)) {
+		} else {
+			SDL_GPUTextureFormat textureFormat2 = SDL_GetGPUTextureFormatFromPixelFormat(SDL_PIXELFORMAT_RGBA32);
+			textureFormat = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+			if (surface->format != SDL_PIXELFORMAT_RGBA32) {
+				convertedSurfacePtr.reset(SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32));
+			}
+			surface = convertedSurfacePtr ? convertedSurfacePtr.get() : surface;
 		}
-		surface = convertedSurfacePtr ? convertedSurfacePtr.get() : surface;
+
+		const size_t bufferSize = static_cast<size_t>(surface->pitch) * surface->h;
 
 		GpuTransferBuffer transferBuffer = createGpuTransferBuffer(
 			gpuDevice,
 			SDL_GPUTransferBufferCreateInfo{
 				.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-				.size = static_cast<Uint32>(surface->w * surface->h * 4)
+				.size = static_cast<Uint32>(bufferSize)
 			}
 		);
 
 		mapGpuTransferBuffer(
 			gpuDevice,
 			transferBuffer.get(),
-			std::span{(Uint8*)surface->pixels, static_cast<size_t>(surface->w * surface->h * 4)},
+			std::span{static_cast<Uint8*>(surface->pixels), bufferSize},
 			false
 		);
 
 		SDL_GPUTextureCreateInfo textureInfo{
 			.type = SDL_GPU_TEXTURETYPE_2D,
-			.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
+			.format = SDL_GetGPUTextureFormatFromPixelFormat(surface->format),
 			.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER,
 			.width = static_cast<Uint32>(surface->w),
 			.height = static_cast<Uint32>(surface->h),
@@ -88,18 +101,20 @@ namespace sdl {
 		}
 		auto rect = *rectOptional;
 
+		const size_t bufferSize = static_cast<size_t>(surface->pitch) * surface->h;
+
 		GpuTransferBuffer transferBuffer = createGpuTransferBuffer(
 			gpuDevice,
 			SDL_GPUTransferBufferCreateInfo{
 				.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-				.size = static_cast<Uint32>(surface->w * surface->h * 4)
+				.size = static_cast<Uint32>(bufferSize)
 			}
 		);
 
 		mapGpuTransferBuffer(
 			gpuDevice,
 			transferBuffer.get(),
-			std::span{(Uint8*)surface->pixels, static_cast<size_t>(surface->w * surface->h * 4)},
+			std::span{static_cast<Uint8*>(surface->pixels), bufferSize},
 			false
 		);
 

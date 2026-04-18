@@ -5,6 +5,7 @@
 #include <spdlog/spdlog.h>
 #include <fmt/core.h>
 #include <SDL3_image/SDL_image.h>
+#include <SDL3/SDL_video.h>
 
 namespace {
 
@@ -57,7 +58,7 @@ namespace {
 				fmt::println("SDL_GAMEPAD_BUTTON_LEFT_STICK");
 				break;
 			case SDL_GAMEPAD_BUTTON_RIGHT_STICK:
-				fmt::println("SDL_GAMEPAD_BUTTON_RIGHT_STICK");
+			 fmt::println("SDL_GAMEPAD_BUTTON_RIGHT_STICK");
 				break;
 			case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
 				fmt::println("SDL_GAMEPAD_BUTTON_LEFT_SHOULDER");
@@ -92,9 +93,9 @@ sdl::SdlSurface createSdlSurface(int w, int h, sdl::Color color) {
 }
 
 sdl::SdlSurface createSdlSurface(const std::string& fileName) {
-	auto s = IMG_Load(fileName.c_str());
+	auto s = IMG_Load("asdasd");// fileName.c_str());
 	if (!s) {
-		throw sdl::SdlException{"Failed to load surface from file '{}'", fileName};
+		throw sdl::SdlException{fmt::format("Failed to load surface from file '{}'", fileName)};
 	}
 	return sdl::createSdlSurface(s);
 }
@@ -287,7 +288,7 @@ void TestWindow::renderFrame(const sdl::DeltaTime& deltaTime, SDL_GPUTexture* sw
 }
 
 void TestWindow::addSurfaceToAtlas(SDL_Surface* surface, int border) {
-	fmt::println("Adding surface to atlas: {}x{}, format: {}", 
+	fmt::println("Adding surface to atlas: {}x{}, format: {}",
 		surface->w, surface->h, SDL_GetPixelFormatName(surface->format));
 	auto _ = sdl::blitToGpuTexture(gpuDevice_, atlas_.get(), imageAtlas_, surface, border);
 }
@@ -304,7 +305,7 @@ void TestWindow::preLoop() {
 
 	[[maybe_unused]] sdl::Color color{0.2f, 0.2f, 0.2f, 1.0f};
 
-	auto surface = sdl::makeSdlUnique<SDL_Surface, SDL_DestroySurface>(IMG_Load("tetris.bmp"));
+	auto surface = sdl::createSdlSurface(IMG_Load("tetris.bmp"));
 	texture_ = sdl::uploadSurface(gpuDevice_, surface.get());
 
 	auto transparentSurface = createSdlSurface(600, 600, sdl::color::Transparent);
@@ -401,7 +402,7 @@ void TestWindow::preLoop() {
 			.vertex_buffer_descriptions = &vertexBufferDescriptions,
 			.num_vertex_buffers = 1,
 			.vertex_attributes = shader_.attributes.data(),
-			.num_vertex_attributes = (Uint32) shader_.attributes.size()
+			.num_vertex_attributes = static_cast<Uint32>(shader_.attributes.size())
 		},
 		.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
 		.target_info = SDL_GPUGraphicsPipelineTargetInfo{
@@ -425,6 +426,30 @@ void TestWindow::renderImGui(const sdl::DeltaTime& deltaTime) {
 		ImGui::Image(reinterpret_cast<ImTextureID>(texture_.get()), glm::vec2{124, 124});
 		static std::string inputText;
 		ImGui::InputText("InputText", &inputText);
+
+		static int selectedProgressState = SDL_PROGRESS_STATE_NONE;
+		const char* progressStateNames[] = {
+			"None",
+			"Indeterminate",
+			"Normal",
+			"Paused",
+			"Error"
+		};
+		const char* currentProgressStateName = progressStateNames[selectedProgressState];
+
+		if (ImGui::BeginCombo("Progress State", currentProgressStateName)) {
+			for (int i = 0; i < 5; ++i) {
+				const bool isSelected = (selectedProgressState == i);
+				if (ImGui::Selectable(progressStateNames[i], isSelected)) {
+					selectedProgressState = i;
+					SDL_SetWindowProgressState(getSdlWindow(), static_cast<SDL_ProgressState>(i));
+				}
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
 	});
 }
 
