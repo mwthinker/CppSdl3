@@ -3,7 +3,7 @@ project(ImGui
 		"ImGui branch: https://github.com/ocornut/imgui"
 	LANGUAGES
 		CXX
-	VERSION 1.92.7
+	VERSION 1.92.8
 )
 
 include(FetchContent)
@@ -11,7 +11,7 @@ FetchContent_Declare(RemoteImGui
 	GIT_REPOSITORY
 		https://github.com/ocornut/imgui.git
 	GIT_TAG
-		b1bcb12a624af7509894c8e77dd47416997777fa
+		b61e56346a92cfcaf1f43a545ca37b0b32239654
 )
 FetchContent_MakeAvailable(RemoteImGui)
 FetchContent_GetProperties(RemoteImGui
@@ -62,6 +62,7 @@ target_sources(ImGui
 find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3)
 find_package(glm CONFIG REQUIRED)
 find_package(SDL3_image CONFIG REQUIRED)
+find_package(SDL3_mixer CONFIG REQUIRED)
 find_package(SDL3_ttf CONFIG REQUIRED)
 find_package(freetype CONFIG REQUIRED)
 
@@ -69,6 +70,7 @@ target_link_libraries(ImGui
 	PUBLIC
 		SDL3::SDL3
 		$<IF:$<TARGET_EXISTS:SDL3_image::SDL3_image-shared>,SDL3_image::SDL3_image-shared,SDL3_image::SDL3_image-static>
+		$<IF:$<TARGET_EXISTS:SDL3_mixer::SDL3_mixer>,SDL3_mixer::SDL3_mixer,SDL3_mixer::SDL3_mixer-static>
 		SDL3_ttf::SDL3_ttf
 		freetype
 		glm::glm

@@ -19,6 +19,7 @@
 			]
 		},
 		"sdl3-ttf",
+		"sdl3-mixer",
 		"spdlog",
 		"glm",
 		"fmt",

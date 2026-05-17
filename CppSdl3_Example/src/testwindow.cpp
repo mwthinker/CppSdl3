@@ -93,7 +93,7 @@ sdl::SdlSurface createSdlSurface(int w, int h, sdl::Color color) {
 }
 
 sdl::SdlSurface createSdlSurface(const std::string& fileName) {
-	auto s = IMG_Load("asdasd");// fileName.c_str());
+	auto s = IMG_Load(fileName.c_str());
 	if (!s) {
 		throw sdl::SdlException{fmt::format("Failed to load surface from file '{}'", fileName)};
 	}
