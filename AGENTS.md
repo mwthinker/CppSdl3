@@ -90,6 +90,7 @@ Graphic is done by SDL_gpu.
 - SDL3 (with Vulkan support)
 - SDL3_image (with PNG support)
 - SDL3_ttf
+- SDL3_mixer
 - GLM (OpenGL Mathematics)
 - spdlog (header-only)
 - fmt
