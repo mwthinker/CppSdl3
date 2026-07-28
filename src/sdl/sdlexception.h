@@ -3,7 +3,7 @@
 
 #include <SDL3/SDL_error.h>
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <stdexcept>
 #include <source_location>

@@ -3,7 +3,7 @@ project(ImGui
 		"ImGui branch: https://github.com/ocornut/imgui"
 	LANGUAGES
 		CXX
-	VERSION 1.92.8
+	VERSION 1.92.9
 )
 
 include(FetchContent)
@@ -11,7 +11,7 @@ FetchContent_Declare(RemoteImGui
 	GIT_REPOSITORY
 		https://github.com/ocornut/imgui.git
 	GIT_TAG
-		b61e56346a92cfcaf1f43a545ca37b0b32239654
+		9b4eb24cee2071e61dc1f9ef3e5228097cdde720
 )
 FetchContent_MakeAvailable(RemoteImGui)
 FetchContent_GetProperties(RemoteImGui

@@ -5,6 +5,8 @@
 #include "color.h"
 #include "imageatlas.h"
 
+#include <fmt/core.h>
+
 #include <stdexcept>
 
 namespace sdl {

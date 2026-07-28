@@ -4,7 +4,7 @@ project(CppSdl3
 		"A C++ wrapper around SDL3 (Simple Direct Media Layer) and SDL_gpu embedded with ImGui (Dear ImGui)"
 	LANGUAGES
 		CXX
-	VERSION 0.13.0
+	VERSION 0.14.0
 )
 
 add_library(CppSdl3 STATIC)

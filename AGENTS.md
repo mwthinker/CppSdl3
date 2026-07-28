@@ -30,11 +30,6 @@ cmake --preset=unix -B build -DCppSdl3_Example=1 -DCppSdl3_Test=1
 cmake --build build
 ```
 
-### CMake Options
-- `-DCppSdl3_Example=1` - Build the example application
-- `-DCppSdl3_Test=1` - Build the test suite (uses GoogleTest)
-- `-DCMAKE_BUILD_TYPE=Debug|Release` - Build type (Unix only)
-
 ### Running Tests
 Tests use GoogleTest with CTest integration:
 ```bash
