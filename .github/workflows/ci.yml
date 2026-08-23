@@ -1,6 +1,7 @@
 name: CI
 on:
   push:
+  pull_request:
 
 jobs:
   job:
@@ -10,22 +11,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
+          - os: windows-2025-vs2026
             preset: 'windows'
           - os: ubuntu-latest
             preset: 'unix'
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Install CMake and Ninja
         uses: lukka/get-cmake@v4.4.2
-
-      - name: Set C++/C compiler on macOS
-        shell: bash
-        run: echo "CC=gcc-11" >> $GITHUB_ENV; echo "CXX=g++-11" >> $GITHUB_ENV;
-        if: runner.os == 'macOS'
 
       - name: Set C++ VCPKG_ROOT
         shell: bash
@@ -36,7 +32,7 @@ jobs:
         run: |
           g++ --version
           make --version
-        if: runner.os == 'Linux' || runner.os == 'macOS'
+        if: runner.os == 'Linux'
 
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y libltdl-dev libx11-dev libxft-dev libxext-dev autoconf autoconf-archive automake libtool
@@ -48,13 +44,14 @@ jobs:
           cmake --preset=${{ matrix.preset }} -B build_debug -DCppSdl3_Test=1 -DCppSdl3_Example=1 -DCMAKE_VERBOSE_MAKEFILE=1 -DCMAKE_BUILD_TYPE=Debug
           cmake --preset=${{ matrix.preset }} -B build_release -DCppSdl3_Test=1 -DCppSdl3_Example=1 -DCMAKE_VERBOSE_MAKEFILE=1 -DCMAKE_BUILD_TYPE=Release
 
-      - name: Print log message on macOS
-        shell: bash
-        run: cat /Users/runner/work/CppSdl3/CppSdl3/vcpkg/buildtrees/sdl3/install-x64-osx-dbg-out.log
-        if: runner.os == 'macOS'
-
       - name: Compile binaries
         shell: bash
         run: |
-          cmake --build build_debug
-          cmake --build build_release
+          cmake --build build_debug --config Debug
+          cmake --build build_release --config Release
+
+      - name: Run tests
+        shell: bash
+        run: |
+          ctest --test-dir build_debug --build-config Debug --output-on-failure
+          ctest --test-dir build_release --build-config Release --output-on-failure
