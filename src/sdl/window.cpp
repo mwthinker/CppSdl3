@@ -119,6 +119,7 @@ namespace sdl {
 		if (gpuDevice_) {
 			ImGui_ImplSDLGPU3_Shutdown();
 			ImGui_ImplSDL3_Shutdown();
+			ImGui::DestroyContext();
 
 			SDL_WaitForGPUIdle(gpuDevice_);
 

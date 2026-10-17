@@ -117,6 +117,7 @@ message(STATUS "MSVC_TOOLSET_VERSION: ${MSVC_VERSION}")
 
 option(CppSdl3_Test "Add CppSdl3_Test to project." OFF)
 if (CppSdl3_Test)
+	enable_testing()
 	add_subdirectory(CppSdl3_Test)
 endif ()
 
